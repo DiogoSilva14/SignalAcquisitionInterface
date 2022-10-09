@@ -1,7 +1,5 @@
 # SignalAcquisitionInterface
 
-This project is composed of t
-
 #  1	Motivation
   
   Over the years several automated solutions have been the answer to many problems faced by companies. This project is no exception and caught our attention because we are a group of 5 students in the automation and control profile with a lot of knowledge in electronics.
