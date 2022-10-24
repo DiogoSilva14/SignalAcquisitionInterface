@@ -13,20 +13,29 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <termios.h>
+#include <unistd.h>
 
 // Error definition
-#define INITIALIZATION_NOT_SUCCESFULL -1
+#define INITIALIZATION_NOT_SUCCESSFUL -1
 #define RS485_NOT_INITIALIZED -1
 #define FAILED_SENDING_BYTE -2
 #define FAILED_GETTING_BYTE -1
 
 /** @brief Initializes the RS-485 Module
  *
+ *  @param serial_port Serial port for RS-485 device
  *  @param baud_rate Baud rate chosen for the RS-485 line
+ *  @param bits_per_frame Quantity of bits sent per frame
+ *  @param parity_bit Quantity of parity bits, either 1 or 0
+ *  @param stop_bits Quantity of stop bits, either 1 or 2
+ *  @param block Choose whether read() blocks. 0 means no blocking, other value means block.
  *  @return 0 Initalization was sucessful
  *          -1 Device was not initialized sucessfuly
  */
-int init_rs485(int baud_rate);
+int init_rs485(char* serial_port, int baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
 
 /** @brief Send a byte over RS-485
  *
@@ -41,8 +50,9 @@ int sendByte(uint8_t byte_to_send);
  *
  *  @param block If != 0 and there isn't a byte on the buffer, wait for one to arrive
  *  @param received_byte Pointer to the memory location in which to place the byte
- *  @return 0 Valid byte gotten
- *          -1 Failed to get a byte
+ *  @return  1 Valid byte gotten
+ *           0 No byte available
+ *          -1 Error while getting a byte
  */
 int getByte(uint8_t block, uint8_t* received_byte);
 
