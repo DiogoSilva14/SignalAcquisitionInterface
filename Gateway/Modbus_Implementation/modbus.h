@@ -12,12 +12,30 @@
 #define _MODBUS_H
 
 #include <stdio.h>
+#include <time.h>
 #include "rs485.h"
 #include "device_functions.h"
 
+// Error definition
 #define FAILED_TO_INITIALIZE -1
 #define NOT_INITIALIZED -1
 #define ERROR_SENDING_FRAME -2
+
+// Parameters
+#define CIRCULAR_BUFFER_SIZE 200
+
+// Struct to store a byte with its receive timestamp
+typedef struct Buffer_Byte{
+    long timestamp; // Timestamp in nanoseconds
+    uint8_t byte; // Byte 
+} Buffer_Byte;
+
+// Struct for the circular buffer
+typedef struct Circular_Buffer{
+    Buffer_Byte buffer[CIRCULAR_BUFFER_SIZE];
+    int head;
+    int tail;
+} Circular_Buffer;
 
 /** @brief Initialize modbus module
  *
