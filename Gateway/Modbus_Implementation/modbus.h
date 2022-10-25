@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
+#include <math.h>
 #include "rs485.h"
 #include "device_functions.h"
 
@@ -47,7 +49,7 @@ typedef struct Circular_Buffer{
  *  @return 0 Modbus module was initialized properly
  *          -1 Failed to initialize Modbus module
  */
-int init_modbus(int baud_rate, uint8_t address);
+int init_modbus(int _baud_rate, uint8_t address);
 
 
 /** @brief Send a frame over Modbus
@@ -68,13 +70,13 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
  *  @param data_length Length of data buffer
  *  @return Calculated CRC
  */
-uint16_t crc16(const uint16_t* data_pointer, int length);
+uint16_t crc16(uint8_t* data_pointer, int length);
 
 /** @brief Inserts a byte in the circular buffer
  *
  *  @param byte Byte to insert
  */
-void buffer_insert(uint8_t byte);
+void buffer_insert(Buffer_Byte byte);
 
 /** @brief Pops a byte from the circular buffer
  *
@@ -82,7 +84,7 @@ void buffer_insert(uint8_t byte);
  *  @return 0 if successful
  *          -1 if Buffer is empty
  */
-int buffer_pop(uint8_t* byte);
+int buffer_pop(Buffer_Byte* byte);
 
 /** @brief Function to receive bytes and store them in the buffer
  */

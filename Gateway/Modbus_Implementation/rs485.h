@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
+#include <string.h>
 
 // Error definition
 #define INITIALIZATION_NOT_SUCCESSFUL -1
@@ -26,7 +27,7 @@
 
 /** @brief Initializes the RS-485 Module
  *
- *  @param serial_port Serial port for RS-485 device
+ *  @param serial_port_device Serial port for RS-485 device
  *  @param baud_rate Baud rate chosen for the RS-485 line
  *  @param bits_per_frame Quantity of bits sent per frame
  *  @param parity_bit Quantity of parity bits, either 1 or 0
@@ -35,7 +36,7 @@
  *  @return 0 Initalization was sucessful
  *          -1 Device was not initialized sucessfuly
  */
-int init_rs485(char* serial_port, int baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
+int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
 
 /** @brief Send a byte over RS-485
  *
@@ -55,5 +56,11 @@ int sendByte(uint8_t byte_to_send);
  *          -1 Error while getting a byte
  */
 int getByte(uint8_t* received_byte);
+
+/** @brief Returns the current baud rate
+ * 
+ *  @return Baud Rate
+ */
+int getBaudRate();
 
 #endif

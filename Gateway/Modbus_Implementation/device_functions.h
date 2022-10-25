@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 /** @brief Delays the code execution
  *

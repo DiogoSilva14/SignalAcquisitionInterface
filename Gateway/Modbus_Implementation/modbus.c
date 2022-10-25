@@ -2,17 +2,15 @@
 
 uint8_t device_address = 0;
 uint8_t initialized = 0;
-int baud_rate = 0;
 Circular_Buffer byte_buffer;
 pthread_t rx_thread;
 
-int init_modbus(int baud_rate, uint8_t address){
-    if(init_rs485(baud_rate)){
+int init_modbus(int _baud_rate, uint8_t address){
+    if(init_rs485("/dev/ttyUSB0", _baud_rate, 8, 0, 1, 0)){
         return FAILED_TO_INITIALIZE;
     }
 
     device_address = address;
-    baud_rate = baud_rate;
 
     byte_buffer.head = 0;
     byte_buffer.tail = 0;
@@ -20,7 +18,7 @@ int init_modbus(int baud_rate, uint8_t address){
     memset(byte_buffer.buffer, 0, sizeof(byte_buffer.buffer));
 
     pthread_create(&rx_thread, NULL, rx_bytes, NULL);
-    pthread_detach(rx_thread, NULL);
+    pthread_detach(rx_thread);
 
     initialized = 1;
 
@@ -47,21 +45,21 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
     frame_buffer[frame_it++] = crc & 0xFF;
     frame_buffer[frame_it++] = crc >> 16;
 
-    delay_us(ceil(28000/baud_rate));
+    delay_us(ceil(28000/getBaudRate()));
 
     for(int i=0; i < frame_it; i++){
         sendByte(frame_buffer[i]);
     }
 
-    delay_us(ceil(28000/baud_rate));
+    delay_us(ceil(28000/getBaudRate()));
 }
 
-uint16_t crc16(const uint16_t* data_pointer, int length){
+uint16_t crc16(uint8_t* data_pointer, int length){
     unsigned char x;
     unsigned short crc = 0xFFFF;
 
     while (length--){
-        x = crc >> 8 ^ *data_p++;
+        x = crc >> 8 ^ *data_pointer++;
         x ^= x>>4;
         crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
     }
@@ -69,7 +67,7 @@ uint16_t crc16(const uint16_t* data_pointer, int length){
     return crc;
 }
 
-void buffer_insert(Circular_Buffer byte){
+void buffer_insert(Buffer_Byte byte){
     byte_buffer.buffer[byte_buffer.head++] = byte;
     
     if(byte_buffer.size == CIRCULAR_BUFFER_SIZE){
@@ -83,7 +81,7 @@ void buffer_insert(Circular_Buffer byte){
     }
 }
 
-int buffer_pop(Circular_Buffer* byte){
+int buffer_pop(Buffer_Byte* byte){
     if(byte_buffer.size == 0){
         return BUFFER_FULL;
     }
@@ -111,7 +109,7 @@ void *rx_bytes(void* varg){
 
             buffer_insert(byte_struct);
         }
-        
+
         delay_us(1);
     }
 }
