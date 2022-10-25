@@ -3,6 +3,8 @@
 uint8_t device_address = 0;
 uint8_t initialized = 0;
 int baud_rate = 0;
+Circular_Buffer byte_buffer;
+pthread_t rx_thread;
 
 int init_modbus(int baud_rate, uint8_t address){
     if(init_rs485(baud_rate)){
@@ -11,6 +13,14 @@ int init_modbus(int baud_rate, uint8_t address){
 
     device_address = address;
     baud_rate = baud_rate;
+
+    byte_buffer.head = 0;
+    byte_buffer.tail = 0;
+    byte_buffer.size = 0;
+    memset(byte_buffer.buffer, 0, sizeof(byte_buffer.buffer));
+
+    pthread_create(&rx_thread, NULL, rx_bytes, NULL);
+    pthread_detach(rx_thread, NULL);
 
     initialized = 1;
 
@@ -57,4 +67,51 @@ uint16_t crc16(const uint16_t* data_pointer, int length){
     }
 
     return crc;
+}
+
+void buffer_insert(Circular_Buffer byte){
+    byte_buffer.buffer[byte_buffer.head++] = byte;
+    
+    if(byte_buffer.size == CIRCULAR_BUFFER_SIZE){
+        byte_buffer.tail++;
+    }else{
+        byte_buffer.size++;
+    }
+
+    if(byte_buffer.head >= CIRCULAR_BUFFER_SIZE){
+        byte_buffer.head = 0;
+    }
+}
+
+int buffer_pop(Circular_Buffer* byte){
+    if(byte_buffer.size == 0){
+        return BUFFER_FULL;
+    }
+
+    *byte = byte_buffer.buffer[byte_buffer.tail++];
+
+    byte_buffer.size--;
+
+    if(byte_buffer.tail >= CIRCULAR_BUFFER_SIZE){
+        byte_buffer.tail = 0;
+    }
+}
+
+void *rx_bytes(void* varg){
+    uint8_t rx_byte = 0;
+    struct timespec ts;
+    Buffer_Byte byte_struct;
+
+    while(1){
+        if(getByte(&rx_byte)){
+            timespec_get(&ts, TIME_UTC);
+            
+            byte_struct.byte = rx_byte;
+            byte_struct.timestamp = ts.tv_nsec;
+
+            buffer_insert(byte_struct);
+        }
+        
+        delay_us(1);
+    }
 }

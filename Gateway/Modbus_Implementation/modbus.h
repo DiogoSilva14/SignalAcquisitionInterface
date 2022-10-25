@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
 #include "rs485.h"
 #include "device_functions.h"
 
@@ -20,6 +21,7 @@
 #define FAILED_TO_INITIALIZE -1
 #define NOT_INITIALIZED -1
 #define ERROR_SENDING_FRAME -2
+#define BUFFER_FULL -1
 
 // Parameters
 #define CIRCULAR_BUFFER_SIZE 200
@@ -35,6 +37,7 @@ typedef struct Circular_Buffer{
     Buffer_Byte buffer[CIRCULAR_BUFFER_SIZE];
     int head;
     int tail;
+    int size;
 } Circular_Buffer;
 
 /** @brief Initialize modbus module
@@ -66,5 +69,23 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
  *  @return Calculated CRC
  */
 uint16_t crc16(const uint16_t* data_pointer, int length);
+
+/** @brief Inserts a byte in the circular buffer
+ *
+ *  @param byte Byte to insert
+ */
+void buffer_insert(uint8_t byte);
+
+/** @brief Pops a byte from the circular buffer
+ *
+ *  @param byte Pointer to memory location for byte storage
+ *  @return 0 if successful
+ *          -1 if Buffer is empty
+ */
+int buffer_pop(uint8_t* byte);
+
+/** @brief Function to receive bytes and store them in the buffer
+ */
+void *rx_bytes(void* varg);
 
 #endif

@@ -99,7 +99,7 @@ int sendByte(uint8_t byte_to_send){
     return 0;
 }
 
-int getByte(uint8_t block, uint8_t* received_byte){
+int getByte(uint8_t* received_byte){
     int ret = read(serial_port, &received_byte, 1);
 
     if(ret < 0){

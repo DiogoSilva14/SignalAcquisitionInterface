@@ -54,6 +54,6 @@ int sendByte(uint8_t byte_to_send);
  *           0 No byte available
  *          -1 Error while getting a byte
  */
-int getByte(uint8_t block, uint8_t* received_byte);
+int getByte(uint8_t* received_byte);
 
 #endif
