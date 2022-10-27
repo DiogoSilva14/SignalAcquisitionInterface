@@ -5,7 +5,7 @@ int baud_rate = 0;
 int serial_port = 0;
 
 int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block){
-    int serial_port = open(serial_port_device, O_RDWR);
+    serial_port = open(serial_port_device, O_RDWR);
 
     if(serial_port < 0){
         printf("Error %i from open: %s\n", errno, strerror(errno));
@@ -77,7 +77,7 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
 
     cfsetispeed(&tty, _baud_rate);
     cfsetospeed(&tty, _baud_rate);
-    
+
     baud_rate = _baud_rate;
 
     if(tcsetattr(serial_port, TCSANOW, &tty) != 0){
