@@ -1,5 +1,5 @@
 
-all: main.c modbus.c
+all: main.c modbus.c rs485.c device_functions.c
 	gcc main.c modbus.c rs485.c device_functions.c -o modbus_implementation
 
 rs485_test: rs485_test.c rs485.c

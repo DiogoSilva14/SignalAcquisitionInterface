@@ -58,10 +58,57 @@ uint16_t crc16(uint8_t* data_pointer, int length){
     unsigned char x;
     unsigned short crc = 0xFFFF;
 
+    uint8_t bit = 0;
+
     while (length--){
+        /*
         x = crc >> 8 ^ *data_pointer++;
         x ^= x>>4;
         crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
+        */
+        
+        crc = crc ^ *data_pointer++;
+
+        printf("After XOR with data: %X\n",crc);
+
+        int shift_num = 0;
+
+        while(shift_num<8){
+
+            bit = crc & 0x01;
+
+            crc = crc >> 1;
+            shift_num++;
+
+            printf("Shift : %X \n",crc);
+
+            if(shift_num<8){
+                while(!bit){
+                    bit = crc & 0x01;
+
+                    crc = crc >> 1;
+                    shift_num++;
+
+                    printf("Extra Shift: %X\n",crc);
+                }
+
+                if(shift_num<8){
+                    crc = crc ^ 0xA001;
+                    printf("XOR with 0xA001: %X\n",crc);
+                }
+            }
+            
+/*
+            if(bit){
+                crc = crc ^ 0xA001;
+                printf("XOR with 0xA001: %X\n",crc);
+            }else{
+                crc = crc >> 1;
+                shift_num++;
+                printf("Extra Shift: %X\n",crc);
+            }
+*/
+        }
     }
 
     return crc;
