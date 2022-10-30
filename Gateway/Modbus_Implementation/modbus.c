@@ -55,62 +55,51 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
 }
 
 uint16_t crc16(uint8_t* data_pointer, int length){
-    unsigned char x;
-    unsigned short crc = 0xFFFF;
+    uint16_t crc = 0xFFFF;
+    uint8_t counter;
+    uint8_t carry_flag;
+    uint8_t x;
 
-    uint8_t bit = 0;
+    /*
+
+    for(int i=0; i<length; i++){
+        crc = ( ((crc & 0xFF) ^ data_pointer[i]) | (crc & 0xFF00));
+
+	printf("XOR with data: %X\n",crc);
+
+        counter = 0;
+
+        do{	
+		carry_flag = crc & 0x0001;
+		crc = crc >> 1;
+		counter++;
+
+		printf("Shift %d: %X\n", counter, crc);
+
+		if(counter == 8)
+			break;
+
+		while(!carry_flag && counter < 8){
+			carry_flag = crc & 0x0001;
+			crc = crc >> 1;
+			counter++;
+			printf("Shift %d: %X\n", counter, crc);
+		}
+
+		crc = crc ^ 0xA001;
+		printf("Exclusive OR(XOR): %X\n", crc);
+        }while(counter < 8);
+    }
+
+    */
 
     while (length--){
-        /*
         x = crc >> 8 ^ *data_pointer++;
         x ^= x>>4;
         crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
-        */
-        
-        crc = crc ^ *data_pointer++;
-
-        printf("After XOR with data: %X\n",crc);
-
-        int shift_num = 0;
-
-        while(shift_num<8){
-
-            bit = crc & 0x01;
-
-            crc = crc >> 1;
-            shift_num++;
-
-            printf("Shift : %X \n",crc);
-
-            if(shift_num<8){
-                while(!bit){
-                    bit = crc & 0x01;
-
-                    crc = crc >> 1;
-                    shift_num++;
-
-                    printf("Extra Shift: %X\n",crc);
-                }
-
-                if(shift_num<8){
-                    crc = crc ^ 0xA001;
-                    printf("XOR with 0xA001: %X\n",crc);
-                }
-            }
-            
-/*
-            if(bit){
-                crc = crc ^ 0xA001;
-                printf("XOR with 0xA001: %X\n",crc);
-            }else{
-                crc = crc >> 1;
-                shift_num++;
-                printf("Extra Shift: %X\n",crc);
-            }
-*/
-        }
     }
-
+    
+    
     return crc;
 }
 
