@@ -11,13 +11,15 @@
 #ifndef _RS485_H
 #define _RS485_H
 
-#include <stdio.h>
+#include <stdio.h>      
+#include <stdlib.h>
+#include <string.h>     
+#include <unistd.h>     
+#include <fcntl.h>      
+#include <errno.h>      
+#include <termios.h>    
 #include <stdint.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <termios.h>
-#include <unistd.h>
-#include <string.h>
+
 
 // Error definition
 #define INITIALIZATION_NOT_SUCCESSFUL -1

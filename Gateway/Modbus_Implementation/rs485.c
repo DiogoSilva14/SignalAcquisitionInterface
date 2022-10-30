@@ -5,7 +5,7 @@ int baud_rate = 0;
 int serial_port = 0;
 
 int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block){
-    serial_port = open(serial_port_device, O_RDWR);
+    serial_port = open(serial_port_device, O_RDWR | O_NOCTTY);
 
     if(serial_port < 0){
         printf("Error %i from open: %s\n", errno, strerror(errno));
@@ -55,17 +55,6 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
      
     tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
     tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
-
-    tty.c_lflag &= ~ICANON;
-    tty.c_lflag &= ~ECHO; // Disable echo
-    tty.c_lflag &= ~ECHOE; // Disable erasure
-    tty.c_lflag &= ~ECHONL; // Disable new-line echo
-    tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
-
-    tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-    tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
     
     if(block){
         tty.c_cc[VTIME] = 0;
@@ -77,6 +66,9 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
 
     cfsetispeed(&tty, _baud_rate);
     cfsetospeed(&tty, _baud_rate);
+
+    cfmakeraw(&tty);
+    tcflush(serial_port, TCIFLUSH);
 
     baud_rate = _baud_rate;
 
@@ -100,7 +92,7 @@ int sendByte(uint8_t byte_to_send){
 }
 
 int getByte(uint8_t* received_byte){
-    int ret = read(serial_port, &received_byte, 1);
+    int ret = read(serial_port, received_byte, 1);
 
     if(ret < 0){
         return FAILED_GETTING_BYTE;

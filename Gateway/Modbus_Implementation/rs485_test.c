@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 
     while(1){
         if(getByte(&byte)){
-            printf("Received: %i \n", byte);
+            printf("Received: %2X \n", byte);
         }
 
         usleep(10);
