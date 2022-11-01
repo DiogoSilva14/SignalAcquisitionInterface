@@ -6,11 +6,11 @@ pthread_t print_thread;
 
 void *print_registers(void* varg){  
     while(1){
-        printf("======== DIGITAL REGISTERS ========");
+        printf("======== DIGITAL REGISTERS ========\n");
         for(int i=0; i < 4; i++){
             printf("Register %d: %X\n", i, get_digital_register(i));
         }
-        printf("======== ANALOG REGISTERS ========");
+        printf("======== ANALOG REGISTERS ========\n");
         for(int i=0; i < 4; i++){
             printf("Register %d: %X\n", i, get_analog_register(i));
         }

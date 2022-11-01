@@ -217,7 +217,7 @@ void handle_frame(Frame frame){
             buffer[1] = 0;
 
             for(int i=0; i < number_registers; i++){
-                buffer[1] |= (get_digital_register(i) << i);
+                buffer[1] |= ((get_digital_register(i) & 0x01) << i);
             }
 
             send_frame(device_address, READ_COILS, buffer, buffer_len);
@@ -256,37 +256,37 @@ void handle_frame(Frame frame){
 }
 
 void set_digital_register(uint8_t register_num, uint8_t value){
-    register_semaphore_down();
+    //register_semaphore_down();
     if(value){
         digital_registers[register_num] = 0xFF;
     }else{
         digital_registers[register_num] = 0;
     }
-    register_semaphore_up();
+    //register_semaphore_up();
 }
 
 uint8_t get_digital_register(uint8_t register_num){
-    register_semaphore_down();
+    //register_semaphore_down();
     if(register_num < 4){
         return digital_registers[register_num];
     }
-    register_semaphore_up();
+    //register_semaphore_up();
 
     return 0;
 }
 
 void set_analog_register(uint8_t register_num, uint16_t value){
-    register_semaphore_down();
+    //register_semaphore_down();
     analog_registers[register_num] = (value & 0x0FFF);
-    register_semaphore_up();
+    //register_semaphore_up();
 }
 
 uint16_t get_analog_register(uint8_t register_num){
-    register_semaphore_down();
+    //register_semaphore_down();
     if(register_num < 4){
         return analog_registers[register_num];
     }
-    register_semaphore_up();
+    //register_semaphore_up();
 
     return 0;
 }
