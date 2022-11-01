@@ -5,6 +5,9 @@ uint8_t initialized = 0;
 Circular_Buffer frame_buffer;
 pthread_t rx_thread;
 
+uint8_t digital_registers[4];
+uint16_t analog_registers[4];
+
 int init_modbus(char* serial_port_device,int _baud_rate, uint8_t address){
     if(init_rs485(serial_port_device, _baud_rate, 8, 0, 1, 0)){
         return FAILED_TO_INITIALIZE;
@@ -29,6 +32,11 @@ int init_modbus(char* serial_port_device,int _baud_rate, uint8_t address){
     #ifdef DEBUG
         printf("Initialized Modbus driver with address %X\n", device_address);
     #endif
+
+    for(int i=0; i < 4; i++){
+        digital_registers[i] = 0;
+        analog_registers[i] = 0;
+    }
 
     return 0;
 }
@@ -244,4 +252,33 @@ void handle_frame(Frame frame){
         default:
             break;
     }
+}
+
+void set_digital_register(uint8_t register_num, uint8_t value){
+    if(value){
+        digital_registers[register_num] = 0xFF;
+    }else{
+        digital_registers[register_num] = 0;
+    }
+    
+}
+
+uint8_t get_digital_register(uint8_t register_num){
+    if(register_num < 4){
+        return digital_registers[register_num];
+    }
+    
+    return 0;
+}
+
+void set_analog_register(uint8_t register_num, uint16_t value){
+    analog_registers[register_num] = (value & 0x0FFF);
+}
+
+uint16_t get_analog_register(uint8_t register_num){
+    if(register_num < 4){
+        return analog_registers[register_num];
+    }
+    
+    return 0;
 }

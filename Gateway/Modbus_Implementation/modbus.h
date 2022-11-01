@@ -112,4 +112,32 @@ void *rx_bytes(void* varg);
  */
 void handle_frame(Frame frame);
 
+/** @brief Change the value of a digital register
+ *  
+ *  @param register_num Register number to change
+ *  @param value New value for the register(anything different from 0 is considered 0xFF)
+ */
+void set_digital_register(uint8_t register_num, uint8_t value);
+
+/** @brief Get the value of a digital register
+ *  
+ *  @param register_num Register number to get
+ *  @return Value of the digital register(either 0 or 0xFF)
+ */
+uint8_t get_digital_register(uint8_t register_num);
+
+/** @brief Change the value of a analog register
+ *  
+ *  @param register_num Register number to change
+ *  @param value New value for the register(truncated to 12 bits)
+ */
+void set_analog_register(uint8_t register_num, uint16_t value);
+
+/** @brief Get the value of a analog register
+ *  
+ *  @param register_num Register number to get
+ *  @return Value of the analog register
+ */
+uint16_t get_analog_register(uint8_t register_num);
+
 #endif
