@@ -26,6 +26,7 @@
 #define RS485_NOT_INITIALIZED -1
 #define FAILED_SENDING_BYTE -2
 #define FAILED_GETTING_BYTE -1
+#define BAUD_RATE_NOT_SUPPORTED -2
 
 /** @brief Initializes the RS-485 Module
  *
@@ -37,6 +38,7 @@
  *  @param block Choose whether read() blocks. 0 means no blocking, other value means block.
  *  @return 0 Initalization was sucessful
  *          -1 Device was not initialized sucessfuly
+ *          -2 Baud rate not supported
  */
 int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
 

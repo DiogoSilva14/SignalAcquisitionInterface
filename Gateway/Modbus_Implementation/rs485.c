@@ -64,8 +64,16 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
         tty.c_cc[VMIN] = 0;
     }
 
-    cfsetispeed(&tty, _baud_rate);
-    cfsetospeed(&tty, _baud_rate);
+    if(_baud_rate == 115200){
+        cfsetispeed(&tty, (speed_t)B115200);
+        cfsetospeed(&tty, (speed_t)B115200);
+    }else if(_baud_rate == 9600){
+        cfsetispeed(&tty, (speed_t)B9600);
+        cfsetospeed(&tty, (speed_t)B9600);
+    }else{
+        return BAUD_RATE_NOT_SUPPORTED;
+    }
+    
 
     cfmakeraw(&tty);
     tcflush(serial_port, TCIFLUSH);
