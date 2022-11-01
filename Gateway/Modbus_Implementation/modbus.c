@@ -5,8 +5,8 @@ uint8_t initialized = 0;
 Circular_Buffer frame_buffer;
 pthread_t rx_thread;
 
-int init_modbus(int _baud_rate, uint8_t address){
-    if(init_rs485("/dev/ttyUSB0", _baud_rate, 8, 0, 1, 0)){
+int init_modbus(char* serial_port_device,int _baud_rate, uint8_t address){
+    if(init_rs485(serial_port_device, _baud_rate, 8, 0, 1, 0)){
         return FAILED_TO_INITIALIZE;
     }
 
@@ -25,6 +25,10 @@ int init_modbus(int _baud_rate, uint8_t address){
     pthread_detach(rx_thread);
 
     initialized = 1;
+
+    #ifdef DEBUG
+        printf("Initialized Modbus driver with address %X\n", device_address);
+    #endif
 
     return 0;
 }
@@ -155,14 +159,18 @@ void *rx_bytes(void* varg){
     frame.length = 0;
 
     while(1){
-        if(getByte(&rx_byte)){
+        while(getByte(&rx_byte)){
             timespec_get(&ts, TIME_UTC);
             
             time_now = ts.tv_nsec;
 
             if((time_now - time_last) > silence_duration){
                 if(frame.length != 0){
-                    buffer_insert(frame);
+                    #ifdef DEBUG
+                        printf("Received frame with %d bytes\n", frame.length);
+                    #endif
+
+                    handle_frame(frame);
                 }
 
                 memset(frame.data, 0, sizeof(frame.data));
@@ -176,4 +184,24 @@ void *rx_bytes(void* varg){
 
         delay_us(1);
     }
+}
+
+void handle_frame(Frame frame){
+    if(frame.data[0] != device_address){
+        #ifdef DEBUG
+            printf("Modbus frame not for me. Address: %X\n", frame.data[0]);
+        #endif
+
+        return;
+    }
+
+    #ifdef DEBUG
+        printf("Received Modbus frame with function %X and data: ", frame.data[1]);
+
+        for(int i=2; i < frame.length; i++){
+            printf("%X ", frame.data[i]);
+        }
+
+        printf("\n");
+    #endif
 }

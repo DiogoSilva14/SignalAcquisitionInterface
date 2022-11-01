@@ -26,6 +26,10 @@
 #define BUFFER_FULL -1
 #define ERROR_INITIALIZING_SEMAPHORE -2
 
+// Modbus Function definition
+#define READ_COILS 0x01
+#define WRITE_MULTIPLE_HOLDING_REGISTERS 0x10
+
 // Parameters
 #define CIRCULAR_BUFFER_SIZE 200
 #define MAX_MODBUS_DATA 100
@@ -53,13 +57,14 @@ typedef struct Modbus_Frame{
 
 /** @brief Initialize modbus module
  *
+ *  @param serial_port_device Serial port for RS-485 device
  *  @param baud_rate Baud rate desired for RS-485 module
  *  @param address Address intended for this device on Modbus line
  *  @return 0 Modbus module was initialized properly
  *          -1 Failed to initialize Modbus module
  *          -2 Failed to initialize Circular Buffer Semaphore
  */
-int init_modbus(int _baud_rate, uint8_t address);
+int init_modbus(char* serial_port_device,int _baud_rate, uint8_t address);
 
 
 /** @brief Send a frame over Modbus
@@ -96,8 +101,14 @@ void buffer_insert(Frame frame);
  */
 int buffer_pop(Frame* frame);
 
-/** @brief Function to receive frames and store them in the buffer
+/** @brief Function to receive frames and answer the requests
  */
 void *rx_bytes(void* varg);
+
+/** @brief Handles a received Modbus frame
+ *  
+ *  @param frame Frame to process
+ */
+void handle_frame(Frame frame);
 
 #endif

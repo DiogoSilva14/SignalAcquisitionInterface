@@ -1,14 +1,23 @@
 #include <stdio.h>
 #include "modbus.h"
 
-int main(){
-    printf("Hello world!\n");
+int main(int argc, char *argv[]){
 
-    uint8_t buffer[] = {0x02,0x10,0x00,0x64,0x00,0x05,0x0A,0x00,0x01,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00};
+    if(argc < 4){
+        printf("Usage: ./modbus_implementation_DEBUG serial-port baud-rate device_address\n");
 
-    uint16_t crc = crc16(buffer,17);
+        return -1;
+    }
 
-    printf("%X\n", crc);
+    if(init_modbus(argv[1], atoi(argv[2]), atoi(argv[3]))){
+        printf("Error initializing Modbus driver\n");
+
+        return -1;
+    }
+
+    while(1){
+        usleep(1000);
+    }
 
     return 0;
 }
