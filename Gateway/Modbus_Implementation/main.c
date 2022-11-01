@@ -1,5 +1,23 @@
 #include <stdio.h>
+#include <pthread.h>
 #include "modbus.h"
+
+pthread_t print_thread;
+
+void *print_registers(void* varg){  
+    while(1){
+        printf("======== DIGITAL REGISTERS ========");
+        for(int i=0; i < 4; i++){
+            printf("Register %d: %X\n", i, get_digital_register(i));
+        }
+        printf("======== ANALOG REGISTERS ========");
+        for(int i=0; i < 4; i++){
+            printf("Register %d: %X\n", i, get_analog_register(i));
+        }
+
+        usleep(1000000);
+    }
+}
 
 int main(int argc, char *argv[]){
 
@@ -15,8 +33,17 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
+    pthread_create(&print_thread, NULL, print_registers, NULL);
+    pthread_detach(print_thread);
+
+    uint8_t register_n;
+    uint8_t new_val;
+
     while(1){
-        usleep(1000);
+        scanf("%d", &register_n);
+        scanf("%d", &new_val);
+
+        set_digital_register(register_n, new_val);
     }
 
     return 0;

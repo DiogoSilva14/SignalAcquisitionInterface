@@ -23,19 +23,19 @@
 
 void delay_us(int microseconds);
 
-/** @brief Initializes the Circular Buffer Semaphore
+/** @brief Initializes the Registers Semaphore
  *
  *  @return 0 if successful
  *          Error code if not successful
  */
-int init_buffer_semaphore();
+int init_register_semaphore();
 
-/** @brief Take Circular Buffer semaphore
+/** @brief Take Registers semaphore
  */
-void buffer_semaphore_down();
+void register_semaphore_down();
 
-/** @brief Releases Circular buffer semaphore
+/** @brief Releases Registers semaphore
  */
-void buffer_semaphore_up();
+void register_semaphore_up();
 
 #endif

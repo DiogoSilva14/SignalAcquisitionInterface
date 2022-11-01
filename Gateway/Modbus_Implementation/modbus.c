@@ -2,7 +2,6 @@
 
 uint8_t device_address = 0;
 uint8_t initialized = 0;
-Circular_Buffer frame_buffer;
 pthread_t rx_thread;
 
 uint8_t digital_registers[4];
@@ -15,12 +14,7 @@ int init_modbus(char* serial_port_device,int _baud_rate, uint8_t address){
 
     device_address = address;
 
-    frame_buffer.head = 0;
-    frame_buffer.tail = 0;
-    frame_buffer.size = 0;
-    memset(frame_buffer.buffer, 0, sizeof(frame_buffer.buffer));
-
-    if(init_buffer_semaphore()){
+    if(init_register_semaphore()){
         return ERROR_INITIALIZING_SEMAPHORE;
     }
 
@@ -117,42 +111,6 @@ uint16_t crc16(uint8_t* data_pointer, int length){
     return crc;
 }
 
-void buffer_insert(Frame frame){
-    buffer_semaphore_down();
-
-    frame_buffer.buffer[frame_buffer.head++] = frame;
-    
-    if(frame_buffer.size == CIRCULAR_BUFFER_SIZE){
-        frame_buffer.tail++;
-    }else{
-        frame_buffer.size++;
-    }
-
-    if(frame_buffer.head >= CIRCULAR_BUFFER_SIZE){
-        frame_buffer.head = 0;
-    }
-
-    buffer_semaphore_up();
-}
-
-int buffer_pop(Frame* frame){
-    buffer_semaphore_down();
-
-    if(frame_buffer.size == 0){
-        return BUFFER_FULL;
-    }
-
-    *frame = frame_buffer.buffer[frame_buffer.tail++];
-
-    frame_buffer.size--;
-
-    if(frame_buffer.tail >= CIRCULAR_BUFFER_SIZE){
-        frame_buffer.tail = 0;
-    }
-
-    buffer_semaphore_up();
-}
-
 void *rx_bytes(void* varg){
     uint8_t rx_byte = 0;
     Frame frame;
@@ -222,6 +180,9 @@ void *rx_bytes(void* varg){
 }
 
 void handle_frame(Frame frame){
+    static uint8_t buffer[MAX_MODBUS_DATA];
+    uint16_t buffer_len = 0;
+
     if(frame.data[0] != device_address){
         #ifdef DEBUG
             printf("Modbus frame not for me. Address: %X\n", frame.data[0]);
@@ -242,11 +203,51 @@ void handle_frame(Frame frame){
 
     switch(frame.data[1]){
         case READ_COILS:
-            uint8_t buffer[] = {0x01, 0x01};
-            send_frame(device_address, READ_COILS, buffer, 2);
+            buffer_len = 2;
+
+            uint16_t first_register = (frame.data[2] << 8 | frame.data[3]);
+            uint16_t number_registers = (frame.data[4] << 8 | frame.data[5]);
+
+            if(number_registers > 4)
+                number_registers = 4;
+
+            // Only one byte is needed for the max registers (4)
+            buffer[0] = 1;
+
+            buffer[1] = 0;
+
+            for(int i=0; i < number_registers; i++){
+                buffer[1] |= (get_digital_register(i) << i);
+            }
+
+            send_frame(device_address, READ_COILS, buffer, buffer_len);
 
             #ifdef DEBUG
                 printf("Answered READ_COILS\n");
+            #endif
+            break;
+        case WRITE_MULTIPLE_HOLDING_REGISTERS:
+            buffer_len = 4;
+
+            uint16_t analog_first_register = (frame.data[2] << 8 | frame.data[3]);
+            uint16_t analog_number_registers = (frame.data[4] << 8 | frame.data[5]);
+            uint16_t num_bytes = (frame.data[6]);
+
+            for(int i=0; i < analog_number_registers; i++){
+                if(analog_first_register + i < 4){
+                    set_analog_register(analog_first_register + i, (frame.data[7 + i*2] << 8) | (frame.data[8 + i*2]));
+                }
+            }
+
+            buffer[0] = frame.data[2];
+            buffer[1] = frame.data[3];
+            buffer[3] = frame.data[4];
+            buffer[4] = frame.data[5];
+
+            send_frame(device_address, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
+
+            #ifdef DEBUG
+                printf("Answered WRITE_MULTIPLE_HOLDING_REGISTERS\n");
             #endif
             break;
         default:
@@ -255,30 +256,37 @@ void handle_frame(Frame frame){
 }
 
 void set_digital_register(uint8_t register_num, uint8_t value){
+    register_semaphore_down();
     if(value){
         digital_registers[register_num] = 0xFF;
     }else{
         digital_registers[register_num] = 0;
     }
-    
+    register_semaphore_up();
 }
 
 uint8_t get_digital_register(uint8_t register_num){
+    register_semaphore_down();
     if(register_num < 4){
         return digital_registers[register_num];
     }
-    
+    register_semaphore_up();
+
     return 0;
 }
 
 void set_analog_register(uint8_t register_num, uint16_t value){
+    register_semaphore_down();
     analog_registers[register_num] = (value & 0x0FFF);
+    register_semaphore_up();
 }
 
 uint16_t get_analog_register(uint8_t register_num){
+    register_semaphore_down();
     if(register_num < 4){
         return analog_registers[register_num];
     }
-    
+    register_semaphore_up();
+
     return 0;
 }

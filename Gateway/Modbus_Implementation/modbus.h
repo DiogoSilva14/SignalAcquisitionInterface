@@ -41,14 +41,6 @@ typedef struct Frame{
     uint16_t length;
 } Frame;
 
-// Struct for the circular buffer
-typedef struct Circular_Buffer{
-    Frame buffer[CIRCULAR_BUFFER_SIZE];
-    int head;
-    int tail;
-    int size;
-} Circular_Buffer;
-
 typedef struct Modbus_Frame{
     uint8_t address;
     uint8_t function;
@@ -87,20 +79,6 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
  *  @return Calculated CRC
  */
 uint16_t crc16(uint8_t* data_pointer, int length);
-
-/** @brief Inserts a frame in the circular buffer
- *
- *  @param frame Frame to insert
- */
-void buffer_insert(Frame frame);
-
-/** @brief Pops a frame from the circular buffer
- *
- *  @param frame Pointer to memory location for frame storage
- *  @return 0 if successful
- *          -1 if Buffer is empty
- */
-int buffer_pop(Frame* frame);
 
 /** @brief Function to receive frames and answer the requests
  */
