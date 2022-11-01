@@ -33,6 +33,7 @@
 // Parameters
 #define CIRCULAR_BUFFER_SIZE 200
 #define MAX_MODBUS_DATA 100
+#define SILENCE_DURATION_BITS 5
 
 // Struct to store a byte with its receive timestamp
 typedef struct Frame{

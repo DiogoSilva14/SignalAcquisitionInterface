@@ -5,7 +5,7 @@ int baud_rate = 0;
 int serial_port = 0;
 
 int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block){
-    serial_port = open(serial_port_device, O_RDWR | O_NOCTTY);
+    serial_port = open(serial_port_device, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
     if(serial_port < 0){
         printf("Error %i from open: %s\n", errno, strerror(errno));
@@ -56,6 +56,7 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
     tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
     tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
     
+    /*
     if(block){
         tty.c_cc[VTIME] = 0;
         tty.c_cc[VMIN] = 1;
@@ -63,6 +64,10 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
         tty.c_cc[VTIME] = 0;
         tty.c_cc[VMIN] = 0;
     }
+    */
+
+    tty.c_cc[VTIME] = 0;
+    tty.c_cc[VMIN] = 0;
 
     if(_baud_rate == 115200){
         cfsetispeed(&tty, (speed_t)B115200);
@@ -80,6 +85,8 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
 
     baud_rate = _baud_rate;
 
+    tcsetattr(serial_port, TCSANOW, &tty);
+
     if(tcsetattr(serial_port, TCSANOW, &tty) != 0){
         printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
 
@@ -95,6 +102,16 @@ int sendByte(uint8_t byte_to_send){
     }
 
     write(serial_port, &byte_to_send, 1);
+
+    return 0;
+}
+
+int sendBuffer(uint8_t* buffer, uint16_t length){
+    if(baud_rate == 0){
+        return RS485_NOT_INITIALIZED;
+    }
+
+    write(serial_port, buffer, length);
 
     return 0;
 }

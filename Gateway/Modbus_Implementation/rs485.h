@@ -51,6 +51,16 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
  */
 int sendByte(uint8_t byte_to_send);
 
+/** @brief Write to RS-485 line
+ *
+ *  @param byte_to_send Buffer to send
+ *  @param length Length of buffer
+ *  @return 0 Byte was sent
+ *          -1 RS-485 module is not initialized
+ *          -2 Failed sending byte
+ */
+int sendBuffer(uint8_t* buffer, uint16_t length);
+
 /** @brief Get a byte from RS-485 line
  *
  *  @param block If != 0 and there isn't a byte on the buffer, wait for one to arrive

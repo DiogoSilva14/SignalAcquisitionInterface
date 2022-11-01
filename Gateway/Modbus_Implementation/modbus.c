@@ -51,15 +51,13 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
     uint16_t crc = crc16(byte_buffer, buffer_it);
 
     byte_buffer[buffer_it++] = crc & 0xFF;
-    byte_buffer[buffer_it++] = crc >> 16;
+    byte_buffer[buffer_it++] = (crc >> 8) & 0xFF;
 
-    delay_us(ceil(28000/getBaudRate()));
+    delay_us(ceil(SILENCE_DURATION_BITS*1000000/getBaudRate()));
 
-    for(int i=0; i < buffer_it; i++){
-        sendByte(byte_buffer[i]);
-    }
+    sendBuffer(byte_buffer, buffer_it);
 
-    delay_us(ceil(28000/getBaudRate()));
+    delay_us(ceil(SILENCE_DURATION_BITS*1000000/getBaudRate()));
 }
 
 uint16_t crc16(uint8_t* data_pointer, int length){ 
@@ -153,12 +151,17 @@ void *rx_bytes(void* varg){
     struct timespec ts;
     long time_now = 0;
     long time_last = 0;
-    int silence_duration = 3500000000/getBaudRate();
+    long silence_duration = SILENCE_DURATION_BITS*(1000000000/getBaudRate());
+
+    #ifdef DEBUG
+        printf("Silence duration: %ld \n", silence_duration);
+    #endif
 
     memset(frame.data, 0, sizeof(frame.data));
     frame.length = 0;
 
     while(1){
+        /*
         while(getByte(&rx_byte)){
             timespec_get(&ts, TIME_UTC);
             
@@ -168,18 +171,42 @@ void *rx_bytes(void* varg){
                 if(frame.length != 0){
                     #ifdef DEBUG
                         printf("Received frame with %d bytes\n", frame.length);
+                        printf("Time difference: %ld \n", time_now - time_last);
                     #endif
 
                     handle_frame(frame);
                 }
-
                 memset(frame.data, 0, sizeof(frame.data));
                 frame.length = 0;
+
+                timespec_get(&ts, TIME_UTC);
+                
+                time_last = ts.tv_nsec; 
             }
 
             frame.data[frame.length++] = rx_byte;
 
-            time_last = time_now;
+        }
+
+        delay_us(1);
+        */
+
+
+        while(getByte(&rx_byte) > 0){
+            frame.data[frame.length++] = rx_byte;
+            delay_us(50);
+        }
+        
+        
+        if(frame.length != 0){
+            #ifdef DEBUG
+                printf("Received frame with %d bytes\n", frame.length);
+            #endif
+
+            handle_frame(frame);
+
+            memset(frame.data, 0, sizeof(frame.data));
+            frame.length = 0;
         }
 
         delay_us(1);
@@ -204,4 +231,17 @@ void handle_frame(Frame frame){
 
         printf("\n");
     #endif
+
+    switch(frame.data[1]){
+        case READ_COILS:
+            uint8_t buffer[] = {0x01, 0x01};
+            send_frame(device_address, READ_COILS, buffer, 2);
+
+            #ifdef DEBUG
+                printf("Answered READ_COILS\n");
+            #endif
+            break;
+        default:
+            break;
+    }
 }
