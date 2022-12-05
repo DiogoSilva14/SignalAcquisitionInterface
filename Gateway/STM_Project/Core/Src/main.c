@@ -101,7 +101,10 @@ int main(void)
   //MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  init_modbus("dummy", 115200, 0x01);
+  init_modbus("dummy", 115200, 0x03);
+
+  //HAL_UART_Receive_IT(&huart1, uart_RxData, 1);
+  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 
   /* USER CODE END 2 */
 
@@ -263,7 +266,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TX_EN_GPIO_Port, TX_EN_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(TX_EN_GPIO_Port, TX_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;

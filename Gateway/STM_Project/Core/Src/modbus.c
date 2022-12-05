@@ -1,6 +1,6 @@
 #include "modbus.h"
 
-uint8_t device_address = 0;
+uint8_t device_address;
 uint8_t initialized = 0;
 
 uint8_t digital_registers[4];
@@ -53,11 +53,13 @@ int send_frame(uint8_t destination_address, uint8_t function, uint8_t* data_poin
     byte_buffer[buffer_it++] = crc & 0xFF;
     byte_buffer[buffer_it++] = (crc >> 8) & 0xFF;
 
-    delay_us(ceil(SILENCE_DURATION_BITS*1000000/getBaudRate()));
+
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
 
     sendBuffer(byte_buffer, buffer_it);
 
-    delay_us(ceil(SILENCE_DURATION_BITS*1000000/getBaudRate()));
+    HAL_Delay(1);
 }
 
 uint16_t crc16(uint8_t* data_pointer, int length){
@@ -121,38 +123,18 @@ void rx_bytes(){
         printf("Silence duration: %ld \n", silence_duration);
     #endif
 
-    memset(frame.data, 0, sizeof(frame.data));
+    //memset(frame.data, 0, sizeof(frame.data));
     frame.length = 0;
 
+    time_last = getCurrentMicros();
+
     while(1){
-        /*
-        while(getByte(&rx_byte)){
-            timespec_get(&ts, TIME_UTC);
-
-            time_now = ts.tv_nsec;
-            if((time_now - time_last) > silence_duration){
-                if(frame.length != 0){
-                    #ifdef DEBUG
-                        printf("Received frame with %d bytes\n", frame.length);
-                        printf("Time difference: %ld \n", time_now - time_last);
-                    #endif
-                    handle_frame(frame);
-                }
-                memset(frame.data, 0, sizeof(frame.data));
-                frame.length = 0;
-                timespec_get(&ts, TIME_UTC);
-
-                time_last = ts.tv_nsec;
-            }
-            frame.data[frame.length++] = rx_byte;
-        }
-        delay_us(1);
-        */
-
-
-        while(getByte(&rx_byte) > 0){
-            frame.data[frame.length++] = rx_byte;
-            delay_us(50);
+        while((getCurrentMicros() - time_last) < 1000){
+        	if(getByte(&rx_byte) > 0){
+        		frame.data[frame.length++] = rx_byte;
+        		time_last = getCurrentMicros();
+        		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        	}
         }
 
 
@@ -167,7 +149,10 @@ void rx_bytes(){
             frame.length = 0;
         }
 
-        delay_us(1);
+        time_last = getCurrentMicros();
+
+        //DWT_Delay(1);
+
         //HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     }
 }
@@ -177,25 +162,13 @@ void handle_frame(Frame frame){
     uint16_t buffer_len = 0;
 
     if(frame.data[0] != device_address){
-        #ifdef DEBUG
-            printf("Modbus frame not for me. Address: %X\n", frame.data[0]);
-        #endif
-
+        sendByte(0x99);
         return;
     }
 
-    #ifdef DEBUG
-        printf("Received Modbus frame with function %X and data: ", frame.data[1]);
-
-        for(int i=2; i < frame.length; i++){
-            printf("%X ", frame.data[i]);
-        }
-
-        printf("\n");
-    #endif
-
     switch(frame.data[1]){
         case READ_COILS:
+
             buffer_len = 2;
 
             uint16_t first_register = (frame.data[2] << 8 | frame.data[3]);
@@ -215,9 +188,9 @@ void handle_frame(Frame frame){
 
             send_frame(device_address, READ_COILS, buffer, buffer_len);
 
-            #ifdef DEBUG
-                printf("Answered READ_COILS\n");
-            #endif
+        	//HAL_Delay(1);
+        	//sendByte(frame.data[1]);
+
             break;
         case WRITE_MULTIPLE_HOLDING_REGISTERS:
             buffer_len = 4;
@@ -238,10 +211,6 @@ void handle_frame(Frame frame){
             buffer[4] = frame.data[5];
 
             send_frame(device_address, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
-
-            #ifdef DEBUG
-                printf("Answered WRITE_MULTIPLE_HOLDING_REGISTERS\n");
-            #endif
             break;
         default:
             break;

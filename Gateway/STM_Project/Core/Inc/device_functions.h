@@ -39,4 +39,8 @@ void register_semaphore_down();
  */
 void register_semaphore_up();
 
+static inline uint32_t LL_SYSTICK_IsActiveCounterFlag(void);
+
+uint32_t getCurrentMicros(void);
+
 #endif
