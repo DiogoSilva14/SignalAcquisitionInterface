@@ -1,4 +1,4 @@
-#include "rs485.h"
+#include <RS485.h>
 
 // RS-485 line baud rate
 int baud_rate = 0;
@@ -20,9 +20,8 @@ int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame,
 	huart1.Init.Mode = UART_MODE_TX_RX;
 	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart1) != HAL_OK)
-	{
-	  Error_Handler();
+	if (HAL_UART_Init(&huart1) != HAL_OK){
+	  return 1;
 	}
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
