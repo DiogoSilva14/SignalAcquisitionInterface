@@ -51,8 +51,10 @@ int sendBuffer(uint8_t* buffer, uint16_t length){
     }
 
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);  // Pull DE high to enable TX operation
+    DWT_Delay(30);
     HAL_UART_Transmit(&huart1, buffer, length, 1000);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);  // Pull RE Low to enable RX operation
+    DWT_Delay(30);
 
     return 0;
 }

@@ -5,10 +5,10 @@
 uint8_t first_delay = 0;
 
 void delay_us(int microseconds){
-	if(first_delay){
-		DWT_Init();
-		first_delay = 0;
-	}
+	//if(first_delay){
+	//	DWT_Init();
+	//	first_delay = 0;
+	//}
 
 	DWT_Delay(microseconds);
 }

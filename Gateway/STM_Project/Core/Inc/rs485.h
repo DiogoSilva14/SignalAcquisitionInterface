@@ -16,6 +16,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <DWT_Delay.h>
+#include <device_functions.h>
 #include "stm32f1xx_hal.h"
 
 

@@ -53,13 +53,7 @@ int MODBUS_SendFrame(uint8_t destination_address, uint8_t function, uint8_t* dat
     byte_buffer[buffer_it++] = crc & 0xFF;
     byte_buffer[buffer_it++] = (crc >> 8) & 0xFF;
 
-
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-
-    sendBuffer(byte_buffer, buffer_it);
-
-    HAL_Delay(1);
+	sendBuffer(byte_buffer, buffer_it);
 }
 
 uint16_t CRC16(uint8_t* data_pointer, int length){

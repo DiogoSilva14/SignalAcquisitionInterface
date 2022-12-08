@@ -71,10 +71,10 @@ uint8_t CAN_SendMsg(uint8_t* data, uint8_t length){
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
     if (RxData[0] ==0x00){
-    	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
     	MODBUS_SetDigitalRegister(0, 0);
     }else if (RxData[0] ==0xff){
-    	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     	MODBUS_SetDigitalRegister(0, 0xFF);
     }
 }
