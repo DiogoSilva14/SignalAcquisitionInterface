@@ -6,7 +6,9 @@ CAN_TxHeaderTypeDef TxHeader;
 uint32_t TxMailbox;
 uint8_t TxData[8];
 
-uint8_t CAN_Init(){
+uint8_t deviceAddress;
+
+uint8_t CAN_Init(uint8_t address){
 	hcan.Instance = CAN1;
 	hcan.Init.Prescaler = 18;
 	hcan.Init.Mode = CAN_MODE_NORMAL;
@@ -19,6 +21,8 @@ uint8_t CAN_Init(){
 	hcan.Init.AutoRetransmission = DISABLE;
 	hcan.Init.ReceiveFifoLocked = DISABLE;
 	hcan.Init.TransmitFifoPriority = DISABLE;
+
+	deviceAddress = address;
 
 	if (HAL_CAN_Init(&hcan) != HAL_OK){
 	  return 1;
@@ -35,12 +39,13 @@ uint8_t CAN_Start(){
 	TxHeader.ExtId = 0;
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.StdId = DEVICE_ADDRESS;
+	TxHeader.StdId = deviceAddress;
 	TxHeader.TransmitGlobalTime = DISABLE;
 }
 
-uint8_t CAN_SendMsg(uint8_t* data, uint8_t length){
+uint8_t CAN_SendMsg(uint8_t typeIdentifier, uint8_t* data, uint8_t length){
 	TxHeader.DLC = length;
+	TxHeader.StdId = ((typeIdentifier & 0x03) << 8) | deviceAddress;
 
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, data, &TxMailbox) != HAL_OK){
 		return 1;

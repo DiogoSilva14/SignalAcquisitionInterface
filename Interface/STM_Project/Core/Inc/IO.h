@@ -3,10 +3,10 @@
 
 #include <main.h>
 
-#define DIGITAL_IN_PINS 1
-#define DIGITAL_OUT_PINS 0
-#define ANALOG_IN_PINS 0
-#define ANALOG_OUT_PINS 0
+#define DIGITAL_IN_PINS 4
+#define DIGITAL_OUT_PINS 4
+#define ANALOG_IN_PINS 4
+#define ANALOG_OUT_PINS 2
 
 #define ANALOG 0
 #define DIGITAL 1
