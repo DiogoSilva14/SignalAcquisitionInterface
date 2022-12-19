@@ -4,10 +4,12 @@
 #include <IO.h>
 #include <CAN.h>
 #include <Clock.h>
+#include <Interfaces.h>
 
 int main(void){
   HAL_Init();
   Clock_Init();
+  Interfaces_Init();
   CAN_Init();
   GPIO_Init();
   DWT_Init();
