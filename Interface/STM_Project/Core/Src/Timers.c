@@ -3,7 +3,7 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
-static int TIMER2_Init(void){
+int TIMER2_Init(void){
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -29,9 +29,11 @@ static int TIMER2_Init(void){
   }
 
   HAL_TIM_Base_Start_IT(&htim2);
+
+  return 0;
 }
 
-static int TIMER3_Init(void){
+int TIMER3_Init(void){
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -57,14 +59,16 @@ static int TIMER3_Init(void){
   }
 
   HAL_TIM_Base_Start_IT(&htim3);
+
+  return 0;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
     if(htim == &htim2){
-    	Interface_SendHeartbeat();
+    	setHeartbeatFlag();
     }
 
     if(htim == &htim3){
-    	Interface_SendInput();
+    	setInputFlag();
     }
 }

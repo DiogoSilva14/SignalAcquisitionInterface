@@ -1,8 +1,9 @@
-#include "main.h"
+#include <main.h>
 #include <CAN.h>
 #include <IO.h>
 #include <Clock.h>
 #include <Timers.h>
+#include <Interface.h>
 
 #define DEVICE_ADDRESS 0x01
 
@@ -18,22 +19,11 @@ int main(void){
   TIMER3_Init();
 
   while (1){
-	  /*
-	  GPIO_SamplePins();
-
-	  if(GPIO_GetPin(DIGITAL, INPUT, 0)){
-		  LED_OFF();
-		  data = 0x00;
-
-		  CAN_SendMsg(&data, 1);
-	  }else{
-		  LED_ON();
-		  data = 0xFF;
-
-		  CAN_SendMsg(&data, 1);
+	  if(getHeartbeatFlag()){
+		  Interface_SendHeartbeat();
 	  }
-	  */
-
-	  ;
+	  if(getInputFlag()){
+		  Interface_SendInput();
+	  }
   }
 }

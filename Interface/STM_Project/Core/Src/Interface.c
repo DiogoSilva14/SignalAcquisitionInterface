@@ -2,6 +2,25 @@
 #include <CAN.h>
 #include <IO.h>
 
+static volatile uint8_t heartbeat_flag = 0x00;
+static volatile uint8_t sendInput_flag = 0x00;
+
+uint8_t getHeartbeatFlag(){
+	return heartbeat_flag;
+}
+
+void setHeartbeatFlag(){
+	heartbeat_flag = 0xFF;
+}
+
+uint8_t getInputFlag(){
+	return sendInput_flag;
+}
+
+void setInputFlag(){
+	sendInput_flag = 0xFF;
+}
+
 void Interface_SendHeartbeat(){
 	uint8_t data = 0x00;
 	CAN_SendMsg(TYPE_HEARTBEAT, &data, 1);

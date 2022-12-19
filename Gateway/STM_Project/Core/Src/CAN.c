@@ -52,9 +52,7 @@ uint8_t CAN_Start(){
 	TxHeader.TransmitGlobalTime = DISABLE;
 
 	HAL_CAN_ConfigFilter(&hcan, &canfilterconfig);
-
 	HAL_CAN_Start(&hcan);
-
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
@@ -70,6 +68,7 @@ uint8_t CAN_SendMsg(uint8_t* data, uint8_t length){
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
+
     if (RxData[0] ==0x00){
     	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
     	MODBUS_SetDigitalRegister(0, 0);
