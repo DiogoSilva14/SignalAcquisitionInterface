@@ -21,9 +21,11 @@ int main(void){
   while (1){
 	  if(getHeartbeatFlag()){
 		  Interface_SendHeartbeat();
+		  unsetHeartbeatFlag();
 	  }
 	  if(getInputFlag()){
 		  Interface_SendInput();
+		  unsetInputFlag();
 	  }
   }
 }

@@ -13,12 +13,20 @@ void setHeartbeatFlag(){
 	heartbeat_flag = 0xFF;
 }
 
+void unsetHeartbeatFlag(){
+	heartbeat_flag = 0x00;
+}
+
 uint8_t getInputFlag(){
 	return sendInput_flag;
 }
 
 void setInputFlag(){
 	sendInput_flag = 0xFF;
+}
+
+void unsetInputFlag(){
+	sendInput_flag = 0x00;
 }
 
 void Interface_SendHeartbeat(){

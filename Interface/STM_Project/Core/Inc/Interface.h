@@ -11,8 +11,10 @@
 void Interface_SendHeartbeat();
 void Interface_SendInput();
 void setInputFlag();
+void unsetInputFlag();
 uint8_t getInputFlag();
 void setHeartbeatFlag();
+void unsetHeartbeatFlag();
 uint8_t getHeartbeatFlag();
 
 #endif /* INC_INTERFACE_H_ */
