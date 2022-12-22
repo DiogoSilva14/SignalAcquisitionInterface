@@ -37,9 +37,9 @@ void Interface_SendHeartbeat(){
 void Interface_SendInput(){
 	GPIO_SamplePins();
 
-	uint8_t data[6];
+	uint8_t data[8];
 
-	for(int i=0; i < 6; i++){
+	for(int i=0; i < 8; i++){
 		data[i] = 0;
 	}
 
@@ -50,13 +50,13 @@ void Interface_SendInput(){
 	CAN_SendMsg(TYPE_DIGITAL, data, 1);
 
 	data[0] = GPIO_GetPin(ANALOG, INPUT, 0) & 0xFF;
-	data[1] = GPIO_GetPin(ANALOG, INPUT, 0) >> 4;
-	data[1] |= (GPIO_GetPin(ANALOG, INPUT, 1) & 0x0F) << 4;
-	data[2] = GPIO_GetPin(ANALOG, INPUT, 1) >> 4;
-	data[3] = GPIO_GetPin(ANALOG, INPUT, 2) & 0xFF;
-	data[4] = GPIO_GetPin(ANALOG, INPUT, 2) >> 4;
-	data[4] |= (GPIO_GetPin(ANALOG, INPUT, 3) & 0x0F) << 4;
-	data[5] = GPIO_GetPin(ANALOG, INPUT, 3) >> 4;
+	data[1] = GPIO_GetPin(ANALOG, INPUT, 0) >> 8;
+	data[2] = GPIO_GetPin(ANALOG, INPUT, 1) & 0xFF;
+	data[3] = GPIO_GetPin(ANALOG, INPUT, 1) >> 8;
+	data[4] = GPIO_GetPin(ANALOG, INPUT, 2) & 0xFF;
+	data[5] = GPIO_GetPin(ANALOG, INPUT, 2) >> 8;
+	data[6] = GPIO_GetPin(ANALOG, INPUT, 3) & 0xFF;
+	data[7] = GPIO_GetPin(ANALOG, INPUT, 3) >> 8;
 
-	CAN_SendMsg(TYPE_ANALOG, data, 6);
+	CAN_SendMsg(TYPE_ANALOG, data, 8);
 }
