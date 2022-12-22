@@ -5,8 +5,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 uint8_t digital_in_pins[DIGITAL_IN_PINS];
 uint8_t digital_out_pins[DIGITAL_OUT_PINS];
-uint16_t analog_out_pins[ANALOG_IN_PINS];
-uint16_t analog_in_pins[ANALOG_OUT_PINS];
+uint16_t analog_out_pins[ANALOG_OUT_PINS];
+uint16_t analog_in_pins[ANALOG_IN_PINS];
 
 uint8_t GPIO_Init(){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -123,5 +123,5 @@ uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 }
 
 void ADC_StartConversion(){
-	HAL_ADC_Start_DMA(&hadc1, &analog_in_pins[1], 1);
+	HAL_ADC_Start_DMA(&hadc1, &analog_in_pins[0], 1);
 }
