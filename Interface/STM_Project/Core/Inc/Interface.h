@@ -4,6 +4,7 @@
 #include <main.h>
 #include <stdint.h>
 
+// Mudar de define para enum
 #define TYPE_HEARTBEAT 0x00
 #define TYPE_DIGITAL 0x01
 #define TYPE_ANALOG 0x02

@@ -7,8 +7,6 @@
 
 #define DEVICE_ADDRESS 0x01
 
-uint8_t data;
-
 int main(void){
   HAL_Init();
   Clock_Init();
