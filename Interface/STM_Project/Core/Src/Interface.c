@@ -60,3 +60,23 @@ void Interface_SendInput(){
 
 	CAN_SendMsg(TYPE_ANALOG_OUTPUT, data, 8);
 }
+
+void Interface_processCANMessages(){
+	CAN_Message message;
+
+	while(!CAN_popMessage(&message)){
+		uint8_t messageType = (message.header & 0x300) >> 8;
+
+		if(messageType == TYPE_ANALOG_OUTPUT){
+			for(int i=0; i < ANALOG_OUT_PINS; i++){
+				uint16_t value = (message.data[i] | (message.data[i+1] << 8)) & 0x4FF;
+				GPIO_SetPin(ANALOG, OUTPUT, i, value);
+			}
+		}
+		if(messageType == TYPE_DIGITAL_OUTPUT){
+			for(int i=0; i < DIGITAL_OUT_PINS; i++){
+				GPIO_SetPin(DIGITAL, OUTPUT, i, message.data[0] & (1 << i));
+			}
+		}
+	}
+}

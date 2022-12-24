@@ -12,7 +12,7 @@ uint8_t deviceAddress;
 
 uint8_t rxFlag = 0x00;
 
-static volatile CircularBuffer circularBuffer = {0,0,0,0};
+static volatile CircularBuffer circularBuffer;
 
 uint8_t CAN_Init(uint8_t address){
 	hcan.Instance = CAN1;
@@ -33,6 +33,10 @@ uint8_t CAN_Init(uint8_t address){
 	if (HAL_CAN_Init(&hcan) != HAL_OK){
 	  return 1;
 	}
+
+	circularBuffer.head = 0;
+	circularBuffer.tail = 0;
+	circularBuffer.size = 0;
 
 	return 0;
 }
@@ -102,7 +106,7 @@ uint8_t CAN_popMessage(CAN_Message* message){
 	return 0;
 }
 
-uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
+void CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
 	CAN_Message message;
 
 	message.header = header;
@@ -133,7 +137,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
 
     if((RxHeader.StdId & 0xFF) == deviceAddress){
-    	setRxFlag();
+    	CAN_setRxFlag();
 
     	CAN_putMessage(RxHeader.StdId, RxData, RxHeader.DLC);
     }

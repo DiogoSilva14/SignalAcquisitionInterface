@@ -19,5 +19,6 @@ uint8_t getInputFlag();
 void setHeartbeatFlag();
 void unsetHeartbeatFlag();
 uint8_t getHeartbeatFlag();
+void Interface_processCANMessages();
 
 #endif /* INC_INTERFACE_H_ */
