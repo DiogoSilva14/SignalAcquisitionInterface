@@ -27,6 +27,6 @@ uint8_t CAN_getRxFlag();
 void CAN_setRxFlag();
 void CAN_unsetRxFlag();
 uint8_t CAN_popMessage(CAN_Message* message);
-static uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length);
+uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length);
 
 #endif /* INC_CAN_H_ */

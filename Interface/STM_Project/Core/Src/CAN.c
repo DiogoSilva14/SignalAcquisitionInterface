@@ -5,8 +5,8 @@ CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
 
 uint32_t TxMailbox;
-uint8_t TxData[8];
-uint8_t RxData[8];
+uint8_t TxData[MESSAGE_MAX_SIZE];
+uint8_t RxData[MESSAGE_MAX_SIZE];
 
 uint8_t deviceAddress;
 
@@ -102,7 +102,7 @@ uint8_t CAN_popMessage(CAN_Message* message){
 	return 0;
 }
 
-static uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
+uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
 	CAN_Message message;
 
 	message.header = header;
@@ -134,5 +134,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
 
     if((RxHeader.StdId & 0xFF) == deviceAddress){
     	setRxFlag();
+
+    	CAN_putMessage(RxHeader.StdId, RxData, RxHeader.DLC);
     }
 }

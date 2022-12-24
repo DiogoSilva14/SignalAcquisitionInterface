@@ -47,7 +47,7 @@ void Interface_SendInput(){
 		data[0] |= ((GPIO_GetPin(DIGITAL, INPUT, i) & 0x01) << i);
 	}
 
-	CAN_SendMsg(TYPE_DIGITAL, data, 1);
+	CAN_SendMsg(TYPE_DIGITAL_INPUT, data, 1);
 
 	data[0] = GPIO_GetPin(ANALOG, INPUT, 0) & 0xFF;
 	data[1] = GPIO_GetPin(ANALOG, INPUT, 0) >> 8;
@@ -58,5 +58,5 @@ void Interface_SendInput(){
 	data[6] = GPIO_GetPin(ANALOG, INPUT, 3) & 0xFF;
 	data[7] = GPIO_GetPin(ANALOG, INPUT, 3) >> 8;
 
-	CAN_SendMsg(TYPE_ANALOG, data, 8);
+	CAN_SendMsg(TYPE_ANALOG_OUTPUT, data, 8);
 }
