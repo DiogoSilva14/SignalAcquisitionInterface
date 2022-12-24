@@ -12,6 +12,8 @@ uint8_t deviceAddress;
 
 uint8_t rxFlag = 0x00;
 
+static volatile CircularBuffer circularBuffer = {0,0,0,0};
+
 uint8_t CAN_Init(uint8_t address){
 	hcan.Instance = CAN1;
 	hcan.Init.Prescaler = 18;
@@ -83,6 +85,48 @@ void CAN_setRxFlag(){
 
 void CAN_unsetRxFlag(){
 	rxFlag = 0x00;
+}
+
+uint8_t CAN_popMessage(CAN_Message* message){
+	if(circularBuffer.size == 0)
+		return 1;
+
+	*message = circularBuffer.data[circularBuffer.tail++];
+
+	if(circularBuffer.tail == BUFFER_MAX_SIZE){
+		circularBuffer.tail = 0;
+	}
+
+	circularBuffer.size--;
+
+	return 0;
+}
+
+static uint8_t CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
+	CAN_Message message;
+
+	message.header = header;
+	message.length = length;
+
+	for(int i=0; i < length; i++){
+		message.data[i] = data[i];
+	}
+
+	circularBuffer.data[circularBuffer.head++] = message;
+	circularBuffer.size++;
+
+	if(circularBuffer.head == BUFFER_MAX_SIZE){
+		circularBuffer.head = 0;
+	}
+
+	if(circularBuffer.size > BUFFER_MAX_SIZE){
+		circularBuffer.size = BUFFER_MAX_SIZE;
+		circularBuffer.tail++;
+
+		if(circularBuffer.tail == BUFFER_MAX_SIZE){
+			circularBuffer.tail = 0;
+		}
+	}
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
