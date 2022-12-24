@@ -10,6 +10,8 @@ uint8_t RxData[8];
 
 uint8_t deviceAddress;
 
+uint8_t rxFlag = 0x00;
+
 uint8_t CAN_Init(uint8_t address){
 	hcan.Instance = CAN1;
 	hcan.Init.Prescaler = 18;
@@ -39,9 +41,9 @@ uint8_t CAN_Start(){
 	canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
 	canfilterconfig.FilterBank = 10;  // anything between 0 to SlaveStartFilterBank
 	canfilterconfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-	canfilterconfig.FilterIdHigh = 0;
+	canfilterconfig.FilterIdHigh = deviceAddress;
 	canfilterconfig.FilterIdLow = 0x0000;
-	canfilterconfig.FilterMaskIdHigh = 0;
+	canfilterconfig.FilterMaskIdHigh = 0xFF;
 	canfilterconfig.FilterMaskIdLow = 0x0000;
 	canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -71,7 +73,22 @@ uint8_t CAN_SendMsg(uint8_t typeIdentifier, uint8_t* data, uint8_t length){
 	return 0;
 }
 
+uint8_t CAN_getRxFlag(){
+	return rxFlag;
+}
+
+void CAN_setRxFlag(){
+	rxFlag = 0xFF;
+}
+
+void CAN_unsetRxFlag(){
+	rxFlag = 0x00;
+}
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
 
+    if((RxHeader.StdId & 0xFF) == deviceAddress){
+    	setRxFlag();
+    }
 }

@@ -34,5 +34,8 @@ int main(void){
 		  ADC_StartConversion();
 		  timeLastADCConversion = HAL_GetTick();
 	  }
+	  if(CAN_getRxFlag()){
+		  // Process input
+	  }
   }
 }

@@ -16,6 +16,7 @@
 uint8_t GPIO_Init();
 void GPIO_SamplePins();
 uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number);
+void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value);
 void LED_ON();
 void LED_OFF();
 void ADC_StartConversion();

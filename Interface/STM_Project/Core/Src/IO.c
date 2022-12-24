@@ -5,8 +5,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 uint8_t digital_in_pins[DIGITAL_IN_PINS];
 uint8_t digital_out_pins[DIGITAL_OUT_PINS];
-uint16_t analog_out_pins[ANALOG_OUT_PINS];
-uint16_t analog_in_pins[ANALOG_IN_PINS];
+uint32_t analog_out_pins[ANALOG_OUT_PINS];
+uint32_t analog_in_pins[ANALOG_IN_PINS];
 
 uint8_t GPIO_Init(){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -99,9 +99,9 @@ void LED_OFF(){
 uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 	if(type == ANALOG){
 		if(inout == INPUT){
-			return analog_in_pins[number];
+			return analog_in_pins[number] & 0xFFFF;
 		}else if(inout == OUTPUT){
-			return analog_out_pins[number];
+			return analog_out_pins[number] & 0xFFFF;
 		}
 	}else if(type == DIGITAL){
 		if(inout == INPUT){
@@ -120,6 +120,22 @@ uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 	}
 
 	return 0;
+}
+
+void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value){
+	if(type == ANALOG){
+		if(inout == OUTPUT){
+			analog_out_pins[number] = value;
+		}
+	}else if(type == DIGITAL){
+		if(inout == OUTPUT){
+			if(value){
+				digital_out_pins[number] = 0xFFFF;
+			}else{
+				digital_out_pins[number] = 0x0000;
+			}
+		}
+	}
 }
 
 void ADC_StartConversion(){
