@@ -27,6 +27,8 @@
 // Modbus Function definition
 #define READ_COILS 0x01
 #define WRITE_MULTIPLE_HOLDING_REGISTERS 0x10
+#define WRITE_HOLDING_REGISTER 0x06
+#define READ_HOLDING_REGISTERS 0x03
 
 // Parameters
 #define CIRCULAR_BUFFER_SIZE 200

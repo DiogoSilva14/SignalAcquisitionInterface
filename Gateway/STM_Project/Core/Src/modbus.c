@@ -159,7 +159,7 @@ void MODBUS_HandleFrame(Frame frame){
                 buffer[1] |= ((MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01) << i);
             }
 
-            MODBUS_SendFrame(device_address, READ_COILS, buffer, buffer_len);
+            MODBUS_SendFrame(deviceAddress, READ_COILS, buffer, buffer_len);
 
             break;
         case WRITE_MULTIPLE_HOLDING_REGISTERS:
@@ -180,8 +180,56 @@ void MODBUS_HandleFrame(Frame frame){
             buffer[3] = frame.data[4];
             buffer[4] = frame.data[5];
 
-            MODBUS_SendFrame(device_address, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
+            MODBUS_SendFrame(deviceAddress, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
             break;
+        case WRITE_HOLDING_REGISTER:
+        	uint16_t registerToWrite = (frame.data[2] << 8 | frame.data[3]);
+        	uint16_t valueToWrite = (frame.data[4] << 8 | frame.data[5]);
+
+        	switch(registerToWrite){
+        		case 0x40006:
+        			for(int i=0; i < 4; i++){
+        				MODBUS_SetDigitalRegister(deviceAddress, i, valueToWrite & (1 << i));
+        			}
+
+        			buffer_len = 4;
+
+        			buffer[0] = frame.data[2];
+        			buffer[1] = frame.data[3];
+        			buffer[2] = frame.data[4];
+        			buffer[3] = frame.data[5];
+
+        			MODBUS_SendFrame(deviceAddress, WRITE_HOLDING_REGISTER, buffer, buffer_len);
+
+        			break;
+        		default:
+        			break;
+        	}
+        	break;
+        case READ_HOLDING_REGISTERS:
+        	uint16_t firstRegisterToRead = (frame.data[2] << 8 | frame.data[3]);
+        	uint16_t numberOfRegisterToRead = (frame.data[4] << 8 | frame.data[5]);
+
+        	switch(firstRegisterToRead){
+        		case 0x40001:
+        			buffer_len = 3;
+
+        			buffer[0] = 2;
+        			buffer[1] = 0;
+        			buffer[2] = 0;
+
+        			for(int i=0; i < 4; i++){
+        				buffer[2] |= MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01;
+        				buffer[2] << 1;
+        			}
+
+        			buffer[2] >> 1;
+
+        			MODBUS_SendFrame(deviceAddress, READ_HOLDING_REGISTERS, buffer, buffer_len);
+        		break;
+        	}
+
+        	break;
         default:
             break;
     }
