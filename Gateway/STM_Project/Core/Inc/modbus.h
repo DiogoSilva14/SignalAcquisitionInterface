@@ -15,6 +15,8 @@
 #include <string.h>
 #include <math.h>
 #include <RS485.h>
+#include <CAN.h>
+#include <Interfaces.h>
 #include "device_functions.h"
 
 // Error definition

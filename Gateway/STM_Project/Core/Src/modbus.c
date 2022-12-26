@@ -100,10 +100,7 @@ uint16_t CRC16(uint8_t* data_pointer, int length){
 void MODBUS_RxThread(){
     uint8_t rx_byte = 0;
     Frame frame;
-    struct timespec ts;
-    long time_now = 0;
     long time_last = 0;
-    long silence_duration = SILENCE_DURATION_BITS*(1000000000/getBaudRate());
 
     frame.length = 0;
 
@@ -140,28 +137,6 @@ void MODBUS_HandleFrame(Frame frame){
     uint8_t deviceAddress = frame.data[0];
 
     switch(frame.data[1]){
-        case READ_COILS:
-
-            buffer_len = 2;
-
-            uint16_t first_register = (frame.data[2] << 8 | frame.data[3]);
-            uint16_t number_registers = (frame.data[4] << 8 | frame.data[5]);
-
-            if(number_registers > 4)
-                number_registers = 4;
-
-            // Only one byte is needed for the max registers (4)
-            buffer[0] = 1;
-
-            buffer[1] = 0;
-
-            for(int i=0; i < number_registers; i++){
-                buffer[1] |= ((MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01) << i);
-            }
-
-            MODBUS_SendFrame(deviceAddress, READ_COILS, buffer, buffer_len);
-
-            break;
         case WRITE_MULTIPLE_HOLDING_REGISTERS:
             buffer_len = 4;
 
@@ -182,12 +157,12 @@ void MODBUS_HandleFrame(Frame frame){
 
             MODBUS_SendFrame(deviceAddress, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
             break;
-        case WRITE_HOLDING_REGISTER:
+        case WRITE_HOLDING_REGISTER: ;
         	uint16_t registerToWrite = (frame.data[2] << 8 | frame.data[3]);
         	uint16_t valueToWrite = (frame.data[4] << 8 | frame.data[5]);
 
         	switch(registerToWrite){
-        		case 0x40006:
+        		case 40006:
         			for(int i=0; i < 4; i++){
         				MODBUS_SetDigitalRegister(deviceAddress, i, valueToWrite & (1 << i));
         			}
@@ -206,12 +181,12 @@ void MODBUS_HandleFrame(Frame frame){
         			break;
         	}
         	break;
-        case READ_HOLDING_REGISTERS:
+        case READ_HOLDING_REGISTERS: ;
         	uint16_t firstRegisterToRead = (frame.data[2] << 8 | frame.data[3]);
         	uint16_t numberOfRegisterToRead = (frame.data[4] << 8 | frame.data[5]);
 
         	switch(firstRegisterToRead){
-        		case 0x40001:
+        		case 40001:
         			buffer_len = 3;
 
         			buffer[0] = 2;
@@ -220,10 +195,10 @@ void MODBUS_HandleFrame(Frame frame){
 
         			for(int i=0; i < 4; i++){
         				buffer[2] |= MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01;
-        				buffer[2] << 1;
+        				buffer[2] = buffer[2] << 1;
         			}
 
-        			buffer[2] >> 1;
+        			buffer[2] = buffer[2] >> 1;
 
         			MODBUS_SendFrame(deviceAddress, READ_HOLDING_REGISTERS, buffer, buffer_len);
         		break;
