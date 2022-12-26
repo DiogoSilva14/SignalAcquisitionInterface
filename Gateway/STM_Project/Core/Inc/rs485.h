@@ -30,7 +30,6 @@
 
 /** @brief Initializes the RS-485 Module
  *
- *  @param serial_port_device Serial port for RS-485 device
  *  @param baud_rate Baud rate chosen for the RS-485 line
  *  @param bits_per_frame Quantity of bits sent per frame
  *  @param parity_bit Quantity of parity bits, either 1 or 0
@@ -40,7 +39,7 @@
  *          -1 Device was not initialized sucessfuly
  *          -2 Baud rate not supported
  */
-int init_rs485(char* serial_port_device, int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
+int init_rs485(int _baud_rate, uint8_t bits_per_frame, uint8_t parity_bit, uint8_t stop_bits, uint8_t block);
 
 /** @brief Send a byte over RS-485
  *

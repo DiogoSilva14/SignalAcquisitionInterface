@@ -48,14 +48,13 @@ typedef struct Modbus_Frame{
 
 /** @brief Initialize modbus module
  *
- *  @param serial_port_device Serial port for RS-485 device
  *  @param baud_rate Baud rate desired for RS-485 module
  *  @param address Address intended for this device on Modbus line
  *  @return 0 Modbus module was initialized properly
  *          -1 Failed to initialize Modbus module
  *          -2 Failed to initialize Circular Buffer Semaphore
  */
-int MODBUS_Init(char* serial_port_device,int _baud_rate, uint8_t address);
+int MODBUS_Init(int _baud_rate, uint8_t address);
 
 
 /** @brief Send a frame over Modbus
@@ -93,27 +92,27 @@ void MODBUS_HandleFrame(Frame frame);
  *  @param register_num Register number to change
  *  @param value New value for the register(anything different from 0 is considered 0xFF)
  */
-void MODBUS_SetDigitalRegister(uint8_t register_num, uint8_t value);
+void MODBUS_SetDigitalRegister(uint8_t deviceAddress, uint8_t register_num, uint8_t value);
 
 /** @brief Get the value of a digital register
  *
  *  @param register_num Register number to get
  *  @return Value of the digital register(either 0 or 0xFF)
  */
-uint8_t MODBUS_GetDigitalRegister(uint8_t register_num);
+uint8_t MODBUS_GetDigitalRegister(uint8_t deviceAddress, uint8_t register_num);
 
 /** @brief Change the value of a analog register
  *
  *  @param register_num Register number to change
  *  @param value New value for the register(truncated to 12 bits)
  */
-void MODBUS_SetAnalogRegister(uint8_t register_num, uint16_t value);
+void MODBUS_SetAnalogRegister(uint8_t deviceAddress, uint8_t register_num, uint16_t value);
 
 /** @brief Get the value of a analog register
  *
  *  @param register_num Register number to get
  *  @return Value of the analog register
  */
-uint16_t MODBUS_GetAnalogRegister(uint8_t register_num);
+uint16_t MODBUS_GetAnalogRegister(uint8_t deviceAddress, uint8_t register_num);
 
 #endif

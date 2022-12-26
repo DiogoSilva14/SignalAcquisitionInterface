@@ -35,7 +35,8 @@ int main(void){
 		  timeLastADCConversion = HAL_GetTick();
 	  }
 	  if(CAN_getRxFlag()){
-		  // Process input
+		  Interface_processCANMessages();
+		  CAN_unsetRxFlag();
 	  }
   }
 }

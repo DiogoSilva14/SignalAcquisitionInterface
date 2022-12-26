@@ -3,11 +3,8 @@
 uint8_t device_address;
 uint8_t initialized = 0;
 
-uint8_t digital_registers[4];
-uint16_t analog_registers[4];
-
-int MODBUS_Init(char* serial_port_device,int _baud_rate, uint8_t address){
-    if(init_rs485(serial_port_device, _baud_rate, 8, 0, 1, 0)){
+int MODBUS_Init(int _baud_rate, uint8_t address){
+    if(init_rs485(_baud_rate, 8, 0, 1, 0)){
         return FAILED_TO_INITIALIZE;
     }
 
@@ -20,11 +17,6 @@ int MODBUS_Init(char* serial_port_device,int _baud_rate, uint8_t address){
     #ifdef DEBUG
         printf("Initialized Modbus driver with address %X\n", device_address);
     #endif
-
-    for(int i=0; i < 4; i++){
-        digital_registers[i] = 0;
-        analog_registers[i] = 0;
-    }
 
     initialized = 1;
 
@@ -113,11 +105,6 @@ void MODBUS_RxThread(){
     long time_last = 0;
     long silence_duration = SILENCE_DURATION_BITS*(1000000000/getBaudRate());
 
-    #ifdef DEBUG
-        printf("Silence duration: %ld \n", silence_duration);
-    #endif
-
-    //memset(frame.data, 0, sizeof(frame.data));
     frame.length = 0;
 
     time_last = getCurrentMicros();
@@ -129,14 +116,14 @@ void MODBUS_RxThread(){
         		time_last = getCurrentMicros();
         		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
         	}
+        	if(CAN_getRxFlag()){
+        		Interfaces_processCANMessages();
+				CAN_unsetRxFlag();
+			}
         }
 
 
         if(frame.length != 0){
-            #ifdef DEBUG
-                printf("Received frame with %d bytes\n", frame.length);
-            #endif
-
             MODBUS_HandleFrame(frame);
 
             memset(frame.data, 0, sizeof(frame.data));
@@ -144,21 +131,13 @@ void MODBUS_RxThread(){
         }
 
         time_last = getCurrentMicros();
-
-        //DWT_Delay(1);
-
-        //HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     }
 }
 
 void MODBUS_HandleFrame(Frame frame){
     static uint8_t buffer[MAX_MODBUS_DATA];
     uint16_t buffer_len = 0;
-
-    if(frame.data[0] != device_address){
-        sendByte(0x99);
-        return;
-    }
+    uint8_t deviceAddress = frame.data[0];
 
     switch(frame.data[1]){
         case READ_COILS:
@@ -177,13 +156,10 @@ void MODBUS_HandleFrame(Frame frame){
             buffer[1] = 0;
 
             for(int i=0; i < number_registers; i++){
-                buffer[1] |= ((MODBUS_GetDigitalRegister(i) & 0x01) << i);
+                buffer[1] |= ((MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01) << i);
             }
 
             MODBUS_SendFrame(device_address, READ_COILS, buffer, buffer_len);
-
-        	//HAL_Delay(1);
-        	//sendByte(frame.data[1]);
 
             break;
         case WRITE_MULTIPLE_HOLDING_REGISTERS:
@@ -195,7 +171,7 @@ void MODBUS_HandleFrame(Frame frame){
 
             for(int i=0; i < analog_number_registers; i++){
                 if(analog_first_register + i < 4){
-                    MODBUS_SetAnalogRegister(analog_first_register + i, (frame.data[7 + i*2] << 8) | (frame.data[8 + i*2]));
+                    MODBUS_SetAnalogRegister(deviceAddress, analog_first_register + i, (frame.data[7 + i*2] << 8) | (frame.data[8 + i*2]));
                 }
             }
 
@@ -211,38 +187,30 @@ void MODBUS_HandleFrame(Frame frame){
     }
 }
 
-void MODBUS_SetDigitalRegister(uint8_t register_num, uint8_t value){
-    //register_semaphore_down();
+void MODBUS_SetDigitalRegister(uint8_t deviceAddress, uint8_t register_num, uint8_t value){
     if(value){
-        digital_registers[register_num] = 0xFF;
+    	setDigitalOutput(deviceAddress, register_num, 0xFF);
     }else{
-        digital_registers[register_num] = 0;
+    	setDigitalOutput(deviceAddress, register_num, 0x00);
     }
-    //register_semaphore_up();
 }
 
-uint8_t MODBUS_GetDigitalRegister(uint8_t register_num){
-    //register_semaphore_down();
+uint8_t MODBUS_GetDigitalRegister(uint8_t deviceAddress, uint8_t register_num){
     if(register_num < 4){
-        return digital_registers[register_num];
+        return getDigitalInput(deviceAddress, register_num);
     }
-    //register_semaphore_up();
 
     return 0;
 }
 
-void MODBUS_SetAnalogRegister(uint8_t register_num, uint16_t value){
-    //register_semaphore_down();
-    analog_registers[register_num] = (value & 0x0FFF);
-    //register_semaphore_up();
+void MODBUS_SetAnalogRegister(uint8_t deviceAddress, uint8_t register_num, uint16_t value){
+	setAnalogOutput(deviceAddress, register_num, value & 0x0FFF);
 }
 
-uint16_t MODBUS_GetAnalogRegister(uint8_t register_num){
-    //register_semaphore_down();
+uint16_t MODBUS_GetAnalogRegister(uint8_t deviceAddress, uint8_t register_num){
     if(register_num < 4){
-        return analog_registers[register_num];
+        return getAnalogInput(deviceAddress, register_num);
     }
-    //register_semaphore_up();
 
     return 0;
 }
