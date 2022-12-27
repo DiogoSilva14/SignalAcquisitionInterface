@@ -91,32 +91,8 @@ void MODBUS_RxThread();
  */
 void MODBUS_HandleFrame(Frame frame);
 
-/** @brief Change the value of a digital register
- *
- *  @param register_num Register number to change
- *  @param value New value for the register(anything different from 0 is considered 0xFF)
- */
-void MODBUS_SetDigitalRegister(uint8_t deviceAddress, uint8_t register_num, uint8_t value);
+uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress);
 
-/** @brief Get the value of a digital register
- *
- *  @param register_num Register number to get
- *  @return Value of the digital register(either 0 or 0xFF)
- */
-uint8_t MODBUS_GetDigitalRegister(uint8_t deviceAddress, uint8_t register_num);
-
-/** @brief Change the value of a analog register
- *
- *  @param register_num Register number to change
- *  @param value New value for the register(truncated to 12 bits)
- */
-void MODBUS_SetAnalogRegister(uint8_t deviceAddress, uint8_t register_num, uint16_t value);
-
-/** @brief Get the value of a analog register
- *
- *  @param register_num Register number to get
- *  @return Value of the analog register
- */
-uint16_t MODBUS_GetAnalogRegister(uint8_t deviceAddress, uint8_t register_num);
+void MODBUS_SetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress, uint16_t value);
 
 #endif

@@ -213,30 +213,56 @@ void MODBUS_HandleFrame(Frame frame){
     }
 }
 
-void MODBUS_SetDigitalRegister(uint8_t deviceAddress, uint8_t register_num, uint8_t value){
-    if(value){
-    	setDigitalOutput(deviceAddress, register_num, 0xFF);
-    }else{
-    	setDigitalOutput(deviceAddress, register_num, 0x00);
-    }
+uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress){
+	switch(registerAddress){
+		case 40001:
+			uint16_t value = 0;
+
+			for(int i=0; i < DIGITAL_INPUTS; i++){
+				value |= getDigitalInput(deviceAddress, i) & 0x01;
+				value = value << 1;
+			}
+
+			value >> 1;
+
+			return value;
+			break;
+		case 40002:
+			return getAnalogInput(deviceAddress,0);
+			break;
+		case 40003:
+			return getAnalogInput(deviceAddress,1);
+			break;
+		case 40004:
+			return getAnalogInput(deviceAddress,2);
+			break;
+		case 40005:
+			return getAnalogInput(deviceAddress,3);
+			break;
+	}
+
+	return 0;
 }
 
-uint8_t MODBUS_GetDigitalRegister(uint8_t deviceAddress, uint8_t register_num){
-    if(register_num < 4){
-        return getDigitalInput(deviceAddress, register_num);
-    }
-
-    return 0;
-}
-
-void MODBUS_SetAnalogRegister(uint8_t deviceAddress, uint8_t register_num, uint16_t value){
-	setAnalogOutput(deviceAddress, register_num, value & 0x0FFF);
-}
-
-uint16_t MODBUS_GetAnalogRegister(uint8_t deviceAddress, uint8_t register_num){
-    if(register_num < 4){
-        return getAnalogInput(deviceAddress, register_num);
-    }
-
-    return 0;
+void MODBUS_SetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress, uint16_t value){
+	switch(registerAddress){
+		case 40006:
+			for(int i=0; i < DIGITAL_INPUTS; i++){
+				setDigitalInput(deviceAddress, i, value & 0x01);
+				value = value >> 1;
+			}
+			break;
+		case 40002:
+			setAnalogInput(deviceAddress,0, value);
+			break;
+		case 40003:
+			setAnalogInput(deviceAddress,1, value);
+			break;
+		case 40004:
+			setAnalogInput(deviceAddress,2, value);
+			break;
+		case 40005:
+			setAnalogInput(deviceAddress,3, value);
+			break;
+	}
 }
