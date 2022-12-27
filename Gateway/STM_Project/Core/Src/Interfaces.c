@@ -3,20 +3,20 @@
 static volatile Interface Interfaces[INTERFACES_NUMBER];
 
 void Interfaces_Init(){
-	for(uint8_t i=0; i < INTERFACES_NUMBER; i++){
-		for(uint8_t ii=0; ii < DIGITAL_INPUTS; i++){
+	for(uint16_t i=0; i < INTERFACES_NUMBER; i++){
+		for(uint8_t ii=0; ii < DIGITAL_INPUTS; ii++){
 			Interfaces[i].digitalInputRegisters[ii] = 0;
 		}
 
-		for(uint8_t ii=0; ii < DIGITAL_OUTPUTS; i++){
+		for(uint8_t ii=0; ii < DIGITAL_OUTPUTS; ii++){
 			Interfaces[i].digitalOutputRegisters[ii] = 0;
 		}
 
-		for(uint8_t ii=0; ii < ANALOG_INPUTS; i++){
+		for(uint8_t ii=0; ii < ANALOG_INPUTS; ii++){
 			Interfaces[i].analogInputRegisters[ii] = 0;
 		}
 
-		for(uint8_t ii=0; ii < ANALOG_OUTPUTS; i++){
+		for(uint8_t ii=0; ii < ANALOG_OUTPUTS; ii++){
 			Interfaces[i].analogOutputRegisters[ii] = 0;
 		}
 	}

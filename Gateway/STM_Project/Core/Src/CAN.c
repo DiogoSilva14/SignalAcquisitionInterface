@@ -61,11 +61,13 @@ uint8_t CAN_Start(){
 	HAL_CAN_ConfigFilter(&hcan, &canfilterconfig);
 	HAL_CAN_Start(&hcan);
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+	return 0;
 }
 
 uint8_t CAN_SendMsg(uint8_t typeIdentifier, uint8_t deviceAddress, uint8_t* data, uint8_t length){
 	TxHeader.DLC = length;
-	TxHeader.StdId = ((typeIdentifier & 0x03) << 8) | deviceAddress;
+	TxHeader.StdId = ((typeIdentifier & 0x07) << 8) | deviceAddress;
 
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, data, &TxMailbox) != HAL_OK){
 		return 1;

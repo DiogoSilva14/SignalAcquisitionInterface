@@ -20,5 +20,6 @@ void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value);
 void LED_ON();
 void LED_OFF();
 void ADC_StartConversion();
+void GPIO_ApplyOutput();
 
 #endif /* INC_IO_H_ */

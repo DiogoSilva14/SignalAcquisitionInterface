@@ -88,11 +88,11 @@ void GPIO_SamplePins(){
 	}
 }
 
-void LED_ON(){
+void LED_OFF(){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 }
 
-void LED_OFF(){
+void LED_ON(){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 }
 
@@ -130,9 +130,9 @@ void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value){
 	}else if(type == DIGITAL){
 		if(inout == OUTPUT){
 			if(value){
-				digital_out_pins[number] = 0xFFFF;
+				digital_out_pins[number] = 0xFF;
 			}else{
-				digital_out_pins[number] = 0x0000;
+				digital_out_pins[number] = 0x00;
 			}
 		}
 	}
@@ -140,4 +140,13 @@ void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value){
 
 void ADC_StartConversion(){
 	HAL_ADC_Start_DMA(&hadc1, &analog_in_pins[0], 1);
+}
+
+void GPIO_ApplyOutput(){
+	// Inverted logic
+	if(digital_out_pins[0]){
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+	}else{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+	}
 }

@@ -14,10 +14,6 @@ int MODBUS_Init(int _baud_rate, uint8_t address){
         return ERROR_INITIALIZING_SEMAPHORE;
     }
 
-    #ifdef DEBUG
-        printf("Initialized Modbus driver with address %X\n", device_address);
-    #endif
-
     initialized = 1;
 
     MODBUS_RxThread();
@@ -111,14 +107,12 @@ void MODBUS_RxThread(){
         	if(getByte(&rx_byte) > 0){
         		frame.data[frame.length++] = rx_byte;
         		time_last = getCurrentMicros();
-        		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
         	}
         	if(CAN_getRxFlag()){
         		Interfaces_processCANMessages();
 				CAN_unsetRxFlag();
 			}
         }
-
 
         if(frame.length != 0){
             MODBUS_HandleFrame(frame);
@@ -135,6 +129,8 @@ void MODBUS_HandleFrame(Frame frame){
     static uint8_t buffer[MAX_MODBUS_DATA];
     uint16_t buffer_len = 0;
     uint8_t deviceAddress = frame.data[0];
+
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 
     switch(frame.data[1]){
         case WRITE_MULTIPLE_HOLDING_REGISTERS:
@@ -166,6 +162,13 @@ void MODBUS_HandleFrame(Frame frame){
         			for(int i=0; i < 4; i++){
         				MODBUS_SetDigitalRegister(deviceAddress, i, valueToWrite & (1 << i));
         			}
+
+        			/** TESTE **/
+
+        			uint8_t data = frame.data[5];
+        			CAN_SendMsg(TYPE_DIGITAL_OUTPUT, frame.data[0], &data, 1);
+
+					/////////////
 
         			buffer_len = 4;
 

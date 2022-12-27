@@ -47,18 +47,19 @@ uint8_t CAN_Start(){
 	canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
 	canfilterconfig.FilterBank = 10;  // anything between 0 to SlaveStartFilterBank
 	canfilterconfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-	canfilterconfig.FilterIdHigh = deviceAddress;
+	canfilterconfig.FilterIdHigh = 0x00;
 	canfilterconfig.FilterIdLow = 0x0000;
-	canfilterconfig.FilterMaskIdHigh = 0xFF;
+	canfilterconfig.FilterMaskIdHigh = 0x00;
 	canfilterconfig.FilterMaskIdLow = 0x0000;
 	canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
-	canfilterconfig.SlaveStartFilterBank = 13;  // 13 to 27 are assigned to slave CAN (CAN 2) OR 0 to 12 are assgned to CAN1
+	canfilterconfig.SlaveStartFilterBank = 13;
 
+	TxHeader.DLC = 2;
 	TxHeader.ExtId = 0;
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.StdId = deviceAddress;
+	TxHeader.StdId = 0x00;
 	TxHeader.TransmitGlobalTime = DISABLE;
 
 	HAL_CAN_ConfigFilter(&hcan, &canfilterconfig);
@@ -70,7 +71,7 @@ uint8_t CAN_Start(){
 
 uint8_t CAN_SendMsg(uint8_t typeIdentifier, uint8_t* data, uint8_t length){
 	TxHeader.DLC = length;
-	TxHeader.StdId = ((typeIdentifier & 0x03) << 8) | deviceAddress;
+	TxHeader.StdId = ((typeIdentifier & 0x07) << 8) | deviceAddress;
 
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, data, &TxMailbox) != HAL_OK){
 		return 1;
