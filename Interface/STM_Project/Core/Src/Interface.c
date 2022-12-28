@@ -58,7 +58,7 @@ void Interface_SendInput(){
 	data[6] = GPIO_GetPin(ANALOG, INPUT, 3) & 0xFF;
 	data[7] = GPIO_GetPin(ANALOG, INPUT, 3) >> 8;
 
-	CAN_SendMsg(TYPE_ANALOG_OUTPUT, data, 8);
+	CAN_SendMsg(TYPE_ANALOG_INPUT, data, 8);
 }
 
 void Interface_processCANMessages(){

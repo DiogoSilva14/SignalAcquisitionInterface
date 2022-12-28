@@ -99,9 +99,9 @@ void LED_ON(){
 uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 	if(type == ANALOG){
 		if(inout == INPUT){
-			return analog_in_pins[number] & 0xFFFF;
+			return analog_in_pins[number] & 0x0FFF;
 		}else if(inout == OUTPUT){
-			return analog_out_pins[number] & 0xFFFF;
+			return analog_out_pins[number] & 0x0FFF;
 		}
 	}else if(type == DIGITAL){
 		if(inout == INPUT){
