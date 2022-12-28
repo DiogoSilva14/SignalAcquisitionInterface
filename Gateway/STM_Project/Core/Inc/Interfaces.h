@@ -31,6 +31,7 @@ uint8_t getDigitalInput(uint8_t deviceAddress, uint8_t inputNumber);
 void setDigitalOutput(uint8_t deviceAddress, uint8_t inputNumber, uint8_t value);
 uint16_t getAnalogInput(uint8_t deviceAddress, uint8_t inputNumber);
 void setAnalogOutput(uint8_t deviceAddress, uint8_t inputNumber, uint16_t value);
+void Interfaces_updateOutput(uint8_t deviceAddress);
 void Interfaces_processCANMessages();
 
 #endif /* INC_INTERFACES_H_ */

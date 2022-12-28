@@ -10,10 +10,6 @@ int MODBUS_Init(int _baud_rate, uint8_t address){
 
     device_address = address;
 
-    if(init_register_semaphore()){
-        return ERROR_INITIALIZING_SEMAPHORE;
-    }
-
     initialized = 1;
 
     MODBUS_RxThread();
@@ -41,7 +37,7 @@ int MODBUS_SendFrame(uint8_t destination_address, uint8_t function, uint8_t* dat
     byte_buffer[buffer_it++] = crc & 0xFF;
     byte_buffer[buffer_it++] = (crc >> 8) & 0xFF;
 
-	sendBuffer(byte_buffer, buffer_it);
+	return sendBuffer(byte_buffer, buffer_it);
 }
 
 uint16_t CRC16(uint8_t* data_pointer, int length){
@@ -133,23 +129,24 @@ void MODBUS_HandleFrame(Frame frame){
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 
     switch(frame.data[1]){
-        case WRITE_MULTIPLE_HOLDING_REGISTERS:
-            buffer_len = 4;
-
+        case WRITE_MULTIPLE_HOLDING_REGISTERS: ;
             uint16_t analog_first_register = (frame.data[2] << 8 | frame.data[3]);
             uint16_t analog_number_registers = (frame.data[4] << 8 | frame.data[5]);
-            uint16_t num_bytes = (frame.data[6]);
+
+            uint16_t registerNumber = analog_first_register;
 
             for(int i=0; i < analog_number_registers; i++){
-                if(analog_first_register + i < 4){
-                    MODBUS_SetAnalogRegister(deviceAddress, analog_first_register + i, (frame.data[7 + i*2] << 8) | (frame.data[8 + i*2]));
-                }
+            	MODBUS_SetDeviceRegister(deviceAddress, registerNumber++, (frame.data[7 + i*2] << 8) | (frame.data[8 + i*2]));
             }
+
+            buffer_len = 4;
 
             buffer[0] = frame.data[2];
             buffer[1] = frame.data[3];
             buffer[3] = frame.data[4];
             buffer[4] = frame.data[5];
+
+            Interfaces_updateOutput(deviceAddress);
 
             MODBUS_SendFrame(deviceAddress, WRITE_MULTIPLE_HOLDING_REGISTERS, buffer, buffer_len);
             break;
@@ -157,57 +154,35 @@ void MODBUS_HandleFrame(Frame frame){
         	uint16_t registerToWrite = (frame.data[2] << 8 | frame.data[3]);
         	uint16_t valueToWrite = (frame.data[4] << 8 | frame.data[5]);
 
-        	switch(registerToWrite){
-        		case 40006:
-        			for(int i=0; i < 4; i++){
-        				MODBUS_SetDigitalRegister(deviceAddress, i, valueToWrite & (1 << i));
-        			}
+        	MODBUS_SetDeviceRegister(deviceAddress, registerToWrite, valueToWrite);
 
-        			/** TESTE **/
+        	buffer_len = 4;
 
-        			uint8_t data = frame.data[5];
-        			CAN_SendMsg(TYPE_DIGITAL_OUTPUT, frame.data[0], &data, 1);
+			buffer[0] = frame.data[2];
+			buffer[1] = frame.data[3];
+			buffer[2] = frame.data[4];
+			buffer[3] = frame.data[5];
 
-					/////////////
+			Interfaces_updateOutput(deviceAddress);
 
-        			buffer_len = 4;
-
-        			buffer[0] = frame.data[2];
-        			buffer[1] = frame.data[3];
-        			buffer[2] = frame.data[4];
-        			buffer[3] = frame.data[5];
-
-        			MODBUS_SendFrame(deviceAddress, WRITE_HOLDING_REGISTER, buffer, buffer_len);
-
-        			break;
-        		default:
-        			break;
-        	}
+			MODBUS_SendFrame(deviceAddress, WRITE_HOLDING_REGISTER, buffer, buffer_len);
         	break;
         case READ_HOLDING_REGISTERS: ;
         	uint16_t firstRegisterToRead = (frame.data[2] << 8 | frame.data[3]);
-        	uint16_t numberOfRegisterToRead = (frame.data[4] << 8 | frame.data[5]);
+        	uint16_t numberOfRegistersToRead = (frame.data[4] << 8 | frame.data[5]);
 
-        	switch(firstRegisterToRead){
-        		case 40001:
-        			buffer_len = 3;
+        	buffer_len = numberOfRegistersToRead*2 + 1;
+        	buffer[0] = numberOfRegistersToRead*2;
 
-        			buffer[0] = 2;
-        			buffer[1] = 0;
-        			buffer[2] = 0;
+        	uint16_t readRegisterNumber = firstRegisterToRead;
 
-        			for(int i=0; i < 4; i++){
-        				buffer[2] |= MODBUS_GetDigitalRegister(deviceAddress, i) & 0x01;
-        				buffer[2] = buffer[2] << 1;
-        			}
-
-        			buffer[2] = buffer[2] >> 1;
-
-        			MODBUS_SendFrame(deviceAddress, READ_HOLDING_REGISTERS, buffer, buffer_len);
-        		break;
+        	for(int i=0; i < numberOfRegistersToRead; i++){
+        		uint16_t registerValue = MODBUS_GetDeviceRegister(deviceAddress, readRegisterNumber++);
+        		buffer[i*2+1] = (registerValue >> 8) & 0xFF;
+        		buffer[i*2+2] = registerValue & 0xFF;
         	}
 
-        	break;
+        	MODBUS_SendFrame(deviceAddress, READ_HOLDING_REGISTERS, buffer, buffer_len);
         default:
             break;
     }
@@ -215,7 +190,7 @@ void MODBUS_HandleFrame(Frame frame){
 
 uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress){
 	switch(registerAddress){
-		case 40001:
+		case 40001: ;
 			uint16_t value = 0;
 
 			for(int i=0; i < DIGITAL_INPUTS; i++){
@@ -223,7 +198,7 @@ uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddres
 				value = value << 1;
 			}
 
-			value >> 1;
+			value = value >> 1;
 
 			return value;
 			break;
@@ -248,21 +223,21 @@ void MODBUS_SetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress, u
 	switch(registerAddress){
 		case 40006:
 			for(int i=0; i < DIGITAL_INPUTS; i++){
-				setDigitalInput(deviceAddress, i, value & 0x01);
+				setDigitalOutput(deviceAddress, i, value & 0x01);
 				value = value >> 1;
 			}
 			break;
 		case 40002:
-			setAnalogInput(deviceAddress,0, value);
+			setAnalogOutput(deviceAddress,0, value);
 			break;
 		case 40003:
-			setAnalogInput(deviceAddress,1, value);
+			setAnalogOutput(deviceAddress,1, value);
 			break;
 		case 40004:
-			setAnalogInput(deviceAddress,2, value);
+			setAnalogOutput(deviceAddress,2, value);
 			break;
 		case 40005:
-			setAnalogInput(deviceAddress,3, value);
+			setAnalogOutput(deviceAddress,3, value);
 			break;
 	}
 }

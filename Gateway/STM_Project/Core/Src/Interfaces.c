@@ -42,7 +42,7 @@ void Interfaces_processCANMessages(){
 	CAN_Message message;
 
 	while(!CAN_popMessage(&message)){
-		uint8_t messageType = (message.header & 0x300) >> 8;
+		uint8_t messageType = (message.header & 0x700) >> 8;
 		uint8_t deviceAddress = message.header & 0xFF;
 
 		if(messageType == TYPE_ANALOG_INPUT){
@@ -60,4 +60,25 @@ void Interfaces_processCANMessages(){
 			}
 		}
 	}
+}
+
+void Interfaces_updateOutput(uint8_t deviceAddress){
+	uint8_t data[8];
+
+	for(int i=0; i < 8; i++){
+		data[i] = 0;
+	}
+
+	for(int i=0; i < 4; i++){
+		data[0] |= ((Interfaces[deviceAddress].digitalOutputRegisters[i] & 0x01) << i);
+	}
+
+	CAN_SendMsg(TYPE_DIGITAL_OUTPUT, deviceAddress, data, 1);
+
+	data[0] = Interfaces[deviceAddress].analogOutputRegisters[0] & 0xFF;
+	data[1] = Interfaces[deviceAddress].analogOutputRegisters[0] >> 8;
+	data[2] = Interfaces[deviceAddress].analogOutputRegisters[1] & 0xFF;
+	data[3] = Interfaces[deviceAddress].analogOutputRegisters[2] >> 8;
+
+	CAN_SendMsg(TYPE_ANALOG_OUTPUT, deviceAddress, data, 4);
 }

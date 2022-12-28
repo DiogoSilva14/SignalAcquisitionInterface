@@ -24,7 +24,6 @@
 #define NOT_INITIALIZED -1
 #define ERROR_SENDING_FRAME -2
 #define BUFFER_FULL -1
-#define ERROR_INITIALIZING_SEMAPHORE -2
 
 // Modbus Function definition
 #define READ_COILS 0x01

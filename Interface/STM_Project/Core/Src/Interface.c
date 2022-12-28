@@ -70,7 +70,7 @@ void Interface_processCANMessages(){
 		if(messageType == TYPE_ANALOG_OUTPUT){
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 			for(int i=0; i < ANALOG_OUT_PINS; i++){
-				uint16_t value = (message.data[i] | (message.data[i+1] << 8)) & 0x4FF;
+				uint16_t value = (message.data[i] | (message.data[i+1] << 8)) & 0xFFF;
 				GPIO_SetPin(ANALOG, OUTPUT, i, value);
 			}
 		}

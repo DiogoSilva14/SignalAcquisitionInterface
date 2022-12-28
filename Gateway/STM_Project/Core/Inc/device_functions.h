@@ -24,22 +24,7 @@
 
 void delay_us(int microseconds);
 
-/** @brief Initializes the Registers Semaphore
- *
- *  @return 0 if successful
- *          Error code if not successful
- */
-int init_register_semaphore();
-
-/** @brief Take Registers semaphore
- */
-void register_semaphore_down();
-
-/** @brief Releases Registers semaphore
- */
-void register_semaphore_up();
-
-static inline uint32_t LL_SYSTICK_IsActiveCounterFlag(void);
+uint32_t LL_SYSTICK_IsActiveCounterFlag(void);
 
 uint32_t getCurrentMicros(void);
 
