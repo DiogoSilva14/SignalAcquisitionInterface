@@ -5,8 +5,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 uint8_t digital_in_pins[DIGITAL_IN_PINS];
 uint8_t digital_out_pins[DIGITAL_OUT_PINS];
-uint16_t analog_out_pins[ANALOG_OUT_PINS];
-uint16_t analog_in_pins[ANALOG_IN_PINS];
+uint32_t analog_out_pins[ANALOG_OUT_PINS];
+uint32_t analog_in_pins[ANALOG_IN_PINS];
 
 uint8_t GPIO_Init(){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -88,20 +88,20 @@ void GPIO_SamplePins(){
 	}
 }
 
-void LED_ON(){
+void LED_OFF(){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 }
 
-void LED_OFF(){
+void LED_ON(){
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 }
 
 uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 	if(type == ANALOG){
 		if(inout == INPUT){
-			return analog_in_pins[number];
+			return analog_in_pins[number] & 0x0FFF;
 		}else if(inout == OUTPUT){
-			return analog_out_pins[number];
+			return analog_out_pins[number] & 0x0FFF;
 		}
 	}else if(type == DIGITAL){
 		if(inout == INPUT){
@@ -122,6 +122,31 @@ uint16_t GPIO_GetPin(uint8_t type, uint8_t inout, uint8_t number){
 	return 0;
 }
 
+void GPIO_SetPin(uint8_t type, uint8_t inout, uint8_t number, uint16_t value){
+	if(type == ANALOG){
+		if(inout == OUTPUT){
+			analog_out_pins[number] = value;
+		}
+	}else if(type == DIGITAL){
+		if(inout == OUTPUT){
+			if(value){
+				digital_out_pins[number] = 0xFF;
+			}else{
+				digital_out_pins[number] = 0x00;
+			}
+		}
+	}
+}
+
 void ADC_StartConversion(){
 	HAL_ADC_Start_DMA(&hadc1, &analog_in_pins[0], 1);
+}
+
+void GPIO_ApplyOutput(){
+	// Inverted logic
+	if(digital_out_pins[0]){
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+	}else{
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+	}
 }

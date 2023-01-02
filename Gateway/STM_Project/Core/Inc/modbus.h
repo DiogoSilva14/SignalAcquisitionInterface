@@ -15,6 +15,8 @@
 #include <string.h>
 #include <math.h>
 #include <RS485.h>
+#include <CAN.h>
+#include <Interfaces.h>
 #include "device_functions.h"
 
 // Error definition
@@ -22,11 +24,12 @@
 #define NOT_INITIALIZED -1
 #define ERROR_SENDING_FRAME -2
 #define BUFFER_FULL -1
-#define ERROR_INITIALIZING_SEMAPHORE -2
 
 // Modbus Function definition
 #define READ_COILS 0x01
 #define WRITE_MULTIPLE_HOLDING_REGISTERS 0x10
+#define WRITE_HOLDING_REGISTER 0x06
+#define READ_HOLDING_REGISTERS 0x03
 
 // Parameters
 #define CIRCULAR_BUFFER_SIZE 200
@@ -48,14 +51,13 @@ typedef struct Modbus_Frame{
 
 /** @brief Initialize modbus module
  *
- *  @param serial_port_device Serial port for RS-485 device
  *  @param baud_rate Baud rate desired for RS-485 module
  *  @param address Address intended for this device on Modbus line
  *  @return 0 Modbus module was initialized properly
  *          -1 Failed to initialize Modbus module
  *          -2 Failed to initialize Circular Buffer Semaphore
  */
-int MODBUS_Init(char* serial_port_device,int _baud_rate, uint8_t address);
+int MODBUS_Init(int _baud_rate, uint8_t address);
 
 
 /** @brief Send a frame over Modbus
@@ -88,32 +90,8 @@ void MODBUS_RxThread();
  */
 void MODBUS_HandleFrame(Frame frame);
 
-/** @brief Change the value of a digital register
- *
- *  @param register_num Register number to change
- *  @param value New value for the register(anything different from 0 is considered 0xFF)
- */
-void MODBUS_SetDigitalRegister(uint8_t register_num, uint8_t value);
+uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress);
 
-/** @brief Get the value of a digital register
- *
- *  @param register_num Register number to get
- *  @return Value of the digital register(either 0 or 0xFF)
- */
-uint8_t MODBUS_GetDigitalRegister(uint8_t register_num);
-
-/** @brief Change the value of a analog register
- *
- *  @param register_num Register number to change
- *  @param value New value for the register(truncated to 12 bits)
- */
-void MODBUS_SetAnalogRegister(uint8_t register_num, uint16_t value);
-
-/** @brief Get the value of a analog register
- *
- *  @param register_num Register number to get
- *  @return Value of the analog register
- */
-uint16_t MODBUS_GetAnalogRegister(uint8_t register_num);
+void MODBUS_SetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress, uint16_t value);
 
 #endif

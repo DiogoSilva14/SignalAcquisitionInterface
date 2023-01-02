@@ -70,6 +70,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 
     if(htim == &htim3){
     	setInputFlag();
-    	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     }
 }

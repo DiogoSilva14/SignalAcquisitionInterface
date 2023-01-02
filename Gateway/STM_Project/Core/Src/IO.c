@@ -1,10 +1,5 @@
 #include <IO.h>
 
-uint8_t digital_in_pins[DIGITAL_IN_PINS];
-uint8_t digital_out_pins[DIGITAL_OUT_PINS];
-uint16_t analog_out_pins[ANALOG_IN_PINS];
-uint16_t analog_in_pins[ANALOG_OUT_PINS];
-
 uint8_t GPIO_Init(){
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 

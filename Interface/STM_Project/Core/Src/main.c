@@ -29,10 +29,13 @@ int main(void){
 		  Interface_SendInput();
 		  unsetInputFlag();
 	  }
-
 	  if(HAL_GetTick() - timeLastADCConversion > 5){
 		  ADC_StartConversion();
 		  timeLastADCConversion = HAL_GetTick();
+	  }
+	  if(CAN_getRxFlag()){
+		  Interface_processCANMessages();
+		  CAN_unsetRxFlag();
 	  }
   }
 }

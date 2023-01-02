@@ -15,11 +15,10 @@ int main(void){
   DWT_Init();
 
   CAN_Start();
-  MODBUS_Init("dummy", 115200, 0x03);
+  MODBUS_Init(115200, 0x00);
 
   while (1){
 	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 	  DWT_Delay(100000);
-	  //HAL_Delay(100);
   }
 }

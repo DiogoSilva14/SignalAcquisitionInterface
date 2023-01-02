@@ -4,10 +4,13 @@ CAN_HandleTypeDef hcan;
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
 
-
 uint32_t TxMailbox;
-uint8_t TxData[8];
-uint8_t RxData[8];
+uint8_t TxData[MESSAGE_MAX_SIZE];
+uint8_t RxData[MESSAGE_MAX_SIZE];
+
+uint8_t rxFlag = 0x00;
+
+static volatile CircularBuffer circularBuffer;
 
 uint8_t CAN_Init(){
 	hcan.Instance = CAN1;
@@ -26,6 +29,10 @@ uint8_t CAN_Init(){
 	if (HAL_CAN_Init(&hcan) != HAL_OK){
 	  return 1;
 	}
+
+	circularBuffer.head = 0;
+	circularBuffer.tail = 0;
+	circularBuffer.size = 0;
 
 	return 0;
 }
@@ -48,16 +55,19 @@ uint8_t CAN_Start(){
 	TxHeader.ExtId = 0;
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.StdId = DEVICE_ADDRESS;
+	TxHeader.StdId = 0x00;
 	TxHeader.TransmitGlobalTime = DISABLE;
 
 	HAL_CAN_ConfigFilter(&hcan, &canfilterconfig);
 	HAL_CAN_Start(&hcan);
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+	return 0;
 }
 
-uint8_t CAN_SendMsg(uint8_t* data, uint8_t length){
+uint8_t CAN_SendMsg(uint8_t typeIdentifier, uint8_t deviceAddress, uint8_t* data, uint8_t length){
 	TxHeader.DLC = length;
+	TxHeader.StdId = ((typeIdentifier & 0x07) << 8) | deviceAddress;
 
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, data, &TxMailbox) != HAL_OK){
 		return 1;
@@ -66,14 +76,63 @@ uint8_t CAN_SendMsg(uint8_t* data, uint8_t length){
 	return 0;
 }
 
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
-    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
+uint8_t CAN_getRxFlag(){
+	return rxFlag;
+}
 
-    if (RxData[0] ==0x00){
-    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-    	MODBUS_SetDigitalRegister(0, 0);
-    }else if (RxData[0] ==0xff){
-    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-    	MODBUS_SetDigitalRegister(0, 0xFF);
-    }
+void CAN_setRxFlag(){
+	rxFlag = 0xFF;
+}
+
+void CAN_unsetRxFlag(){
+	rxFlag = 0x00;
+}
+
+uint8_t CAN_popMessage(CAN_Message* message){
+	if(circularBuffer.size == 0)
+		return 1;
+
+	*message = circularBuffer.data[circularBuffer.tail++];
+
+	if(circularBuffer.tail == BUFFER_MAX_SIZE){
+		circularBuffer.tail = 0;
+	}
+
+	circularBuffer.size--;
+
+	return 0;
+}
+
+void CAN_putMessage(uint16_t header, uint8_t* data, uint8_t length){
+	CAN_Message message;
+
+	message.header = header;
+	message.length = length;
+
+	for(int i=0; i < length; i++){
+		message.data[i] = data[i];
+	}
+
+	circularBuffer.data[circularBuffer.head++] = message;
+	circularBuffer.size++;
+
+	if(circularBuffer.head == BUFFER_MAX_SIZE){
+		circularBuffer.head = 0;
+	}
+
+	if(circularBuffer.size > BUFFER_MAX_SIZE){
+		circularBuffer.size = BUFFER_MAX_SIZE;
+		circularBuffer.tail++;
+
+		if(circularBuffer.tail == BUFFER_MAX_SIZE){
+			circularBuffer.tail = 0;
+		}
+	}
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
+
+	CAN_setRxFlag();
+	CAN_putMessage(RxHeader.StdId, RxData, RxHeader.DLC);
 }
