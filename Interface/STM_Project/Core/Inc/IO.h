@@ -2,6 +2,7 @@
 #define INC_IO_H_
 
 #include <main.h>
+#include <Timers.h>
 
 #define DIGITAL_IN_PINS 4
 #define DIGITAL_OUT_PINS 4
