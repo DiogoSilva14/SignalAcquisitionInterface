@@ -15,8 +15,10 @@ int main(void){
   GPIO_Init();
   CAN_Init(DEVICE_ADDRESS);
   CAN_Start();
+  TIMER1_Init();
   TIMER2_Init();
   TIMER3_Init();
+  GPIO_ApplyOutput();
 
   uint32_t timeLastADCConversion = HAL_GetTick();
 

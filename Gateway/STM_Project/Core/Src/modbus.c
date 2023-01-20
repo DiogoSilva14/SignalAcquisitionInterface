@@ -222,22 +222,16 @@ uint16_t MODBUS_GetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddres
 void MODBUS_SetDeviceRegister(uint8_t deviceAddress, uint16_t registerAddress, uint16_t value){
 	switch(registerAddress){
 		case 40006:
-			for(int i=0; i < DIGITAL_INPUTS; i++){
+			for(int i=0; i < DIGITAL_OUTPUTS; i++){
 				setDigitalOutput(deviceAddress, i, value & 0x01);
 				value = value >> 1;
 			}
 			break;
-		case 40002:
+		case 40007:
 			setAnalogOutput(deviceAddress,0, value);
 			break;
-		case 40003:
+		case 40008:
 			setAnalogOutput(deviceAddress,1, value);
-			break;
-		case 40004:
-			setAnalogOutput(deviceAddress,2, value);
-			break;
-		case 40005:
-			setAnalogOutput(deviceAddress,3, value);
 			break;
 	}
 }

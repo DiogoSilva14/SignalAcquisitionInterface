@@ -149,4 +149,6 @@ void GPIO_ApplyOutput(){
 	}else{
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
 	}
+
+	PWM1_changeDutyCycle(analog_out_pins[0]*100/4095);
 }
