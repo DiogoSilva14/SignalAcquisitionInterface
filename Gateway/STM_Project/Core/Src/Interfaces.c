@@ -47,7 +47,7 @@ void Interfaces_processCANMessages(){
 
 		if(messageType == TYPE_ANALOG_INPUT){
 			for(int i=0; i < ANALOG_INPUTS; i++){
-				Interfaces[deviceAddress].analogInputRegisters[i] = (message.data[i] | (message.data[i+1] << 8)) & 0x4FF;
+				Interfaces[deviceAddress].analogInputRegisters[i] = (message.data[i] | (message.data[i+1] << 8)) & 0xFFF;
 			}
 		}
 		if(messageType == TYPE_DIGITAL_INPUT){
